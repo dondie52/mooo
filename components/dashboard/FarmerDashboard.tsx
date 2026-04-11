@@ -37,39 +37,44 @@ export default function FarmerDashboard() {
 
   useEffect(() => {
     const load = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { router.push("/login"); return; }
 
-      const [
-        { count: animals },
-        { count: overdue },
-        { data: trend },
-        { data: comp },
-        { data: disease },
-        { data: risk },
-        { data: calvings },
-        { data: recent },
-      ] = await Promise.all([
-        supabase.from("animals").select("*", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("vaccinations").select("*", { count: "exact", head: true }).lt("next_due_date", new Date().toISOString()),
-        supabase.rpc("get_vaccination_coverage_trend"),
-        supabase.rpc("get_herd_composition"),
-        supabase.rpc("get_disease_frequency"),
-        supabase.rpc("get_predictive_risk"),
-        supabase.rpc("get_upcoming_calvings"),
-        supabase.from("animals").select("*").eq("status", "active").order("created_at", { ascending: false }).limit(5),
-      ]);
+        const [
+          { count: animals },
+          { count: overdue },
+          { data: trend },
+          { data: comp },
+          { data: disease },
+          { data: risk },
+          { data: calvings },
+          { data: recent },
+        ] = await Promise.all([
+          supabase.from("animals").select("*", { count: "exact", head: true }).eq("status", "active"),
+          supabase.from("vaccinations").select("*", { count: "exact", head: true }).lt("next_due_date", new Date().toISOString()),
+          supabase.rpc("get_vaccination_coverage_trend"),
+          supabase.rpc("get_herd_composition"),
+          supabase.rpc("get_disease_frequency"),
+          supabase.rpc("get_predictive_risk"),
+          supabase.rpc("get_upcoming_calvings"),
+          supabase.from("animals").select("*").eq("status", "active").order("created_at", { ascending: false }).limit(5),
+        ]);
 
-      setTotalAnimals(animals ?? 0);
-      setOverdueCount(overdue ?? 0);
-      setCoverageTrend((trend as CoverageTrendRow[] | null) ?? []);
-      setComposition((comp as CompositionRow[] | null) ?? []);
-      setDiseaseFreq((disease as DiseaseFreqRow[] | null) ?? []);
-      setRiskAnimals((risk as RiskRow[] | null) ?? []);
-      setCalvingsCount((calvings as any[] | null)?.length ?? 0);
-      setRecentAnimals(recent ?? []);
-      setLoading(false);
+        setTotalAnimals(animals ?? 0);
+        setOverdueCount(overdue ?? 0);
+        setCoverageTrend((trend as CoverageTrendRow[] | null) ?? []);
+        setComposition((comp as CompositionRow[] | null) ?? []);
+        setDiseaseFreq((disease as DiseaseFreqRow[] | null) ?? []);
+        setRiskAnimals((risk as RiskRow[] | null) ?? []);
+        setCalvingsCount((calvings as any[] | null)?.length ?? 0);
+        setRecentAnimals(recent ?? []);
+      } catch (err) {
+        console.error("Farmer dashboard load error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [router]);

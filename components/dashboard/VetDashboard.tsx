@@ -53,46 +53,51 @@ export default function VetDashboard() {
 
   useEffect(() => {
     const load = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
+        const [farmersRes, casesRes, vaccsRes, eventsRes, diseaseRes] = await Promise.all([
+          (supabase.rpc as any)("get_vet_assigned_farmers", { vet_uuid: user.id }),
+          (supabase.rpc as any)("get_vet_active_cases", { vet_uuid: user.id }),
+          (supabase.rpc as any)("get_vet_upcoming_vaccinations", { vet_uuid: user.id }),
+          supabase
+            .from("health_events")
+            .select("*, animals(tag_number, owner_id)")
+            .eq("logged_by", user.id)
+            .order("event_date", { ascending: false })
+            .limit(10),
+          (supabase.rpc as any)("get_vet_disease_frequency", { vet_uuid: user.id }),
+        ]);
+
+        const { data: farmersData } = farmersRes as {
+          data: VetFarmerRow[] | null;
+        };
+        const { data: casesData } = casesRes as {
+          data: ActiveCaseRow[] | null;
+        };
+        const { data: vaccsData } = vaccsRes as {
+          data: UpcomingVaccRow[] | null;
+        };
+
+        const { data: diseaseData } = diseaseRes as { data: { condition_name: string; count: number }[] | null };
+
+        setFarmers(farmersData ?? []);
+        setActiveCases(casesData ?? []);
+        setUpcomingVaccs(vaccsData ?? []);
+        setRecentEvents(eventsRes.data ?? []);
+        setDiseaseFreq(diseaseData ?? []);
+      } catch (err) {
+        console.error("Vet dashboard load error:", err);
+      } finally {
+        setLoading(false);
       }
-
-      const [farmersRes, casesRes, vaccsRes, eventsRes, diseaseRes] = await Promise.all([
-        (supabase.rpc as any)("get_vet_assigned_farmers", { vet_uuid: user.id }),
-        (supabase.rpc as any)("get_vet_active_cases", { vet_uuid: user.id }),
-        (supabase.rpc as any)("get_vet_upcoming_vaccinations", { vet_uuid: user.id }),
-        supabase
-          .from("health_events")
-          .select("*, animals(tag_number, owner_id)")
-          .eq("logged_by", user.id)
-          .order("event_date", { ascending: false })
-          .limit(10),
-        (supabase.rpc as any)("get_vet_disease_frequency", { vet_uuid: user.id }),
-      ]);
-
-      const { data: farmersData } = farmersRes as {
-        data: VetFarmerRow[] | null;
-      };
-      const { data: casesData } = casesRes as {
-        data: ActiveCaseRow[] | null;
-      };
-      const { data: vaccsData } = vaccsRes as {
-        data: UpcomingVaccRow[] | null;
-      };
-
-      const { data: diseaseData } = diseaseRes as { data: { condition_name: string; count: number }[] | null };
-
-      setFarmers(farmersData ?? []);
-      setActiveCases(casesData ?? []);
-      setUpcomingVaccs(vaccsData ?? []);
-      setRecentEvents(eventsRes.data ?? []);
-      setDiseaseFreq(diseaseData ?? []);
-      setLoading(false);
     };
     load();
   }, [router]);

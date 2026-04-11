@@ -13,24 +13,29 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const load = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        if (!profile) {
+          router.push("/login");
+          return;
+        }
+        setRole(profile.role);
+      } catch (err) {
+        console.error("Dashboard load error:", err);
         router.push("/login");
-        return;
       }
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      if (!profile) {
-        router.push("/login");
-        return;
-      }
-      setRole(profile.role);
     };
     load();
   }, [router]);

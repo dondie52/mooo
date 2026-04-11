@@ -26,30 +26,35 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const load = async () => {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      const rpc = supabase.rpc as any;
-      const [statsRes, farmsRes, activityRes, vetsRes] = await Promise.all([
-        rpc("get_admin_system_stats"),
-        rpc("get_admin_all_farms"),
-        rpc("get_admin_recent_activity", { lim: 15 }),
-        rpc("get_admin_vet_workload"),
-      ]);
+        const rpc = supabase.rpc as any;
+        const [statsRes, farmsRes, activityRes, vetsRes] = await Promise.all([
+          rpc("get_admin_system_stats"),
+          rpc("get_admin_all_farms"),
+          rpc("get_admin_recent_activity", { lim: 15 }),
+          rpc("get_admin_vet_workload"),
+        ]);
 
-      const { data: statsData } = statsRes as { data: SystemStats[] | SystemStats | null };
-      if (statsData && Array.isArray(statsData) && statsData.length > 0) {
-        setStats(statsData[0]);
-      } else if (statsData && !Array.isArray(statsData)) {
-        setStats(statsData);
+        const { data: statsData } = statsRes as { data: SystemStats[] | SystemStats | null };
+        if (statsData && Array.isArray(statsData) && statsData.length > 0) {
+          setStats(statsData[0]);
+        } else if (statsData && !Array.isArray(statsData)) {
+          setStats(statsData);
+        }
+
+        const { data: farmsData } = farmsRes as { data: FarmRow[] | null };
+        const { data: actData } = activityRes as { data: ActivityRow[] | null };
+        const { data: vetsData } = vetsRes as { data: VetWorkloadRow[] | null };
+        setFarms(farmsData || []);
+        setActivities(actData || []);
+        setVets(vetsData || []);
+      } catch (err) {
+        console.error("Admin dashboard load error:", err);
+      } finally {
+        setLoading(false);
       }
-
-      const { data: farmsData } = farmsRes as { data: FarmRow[] | null };
-      const { data: actData } = activityRes as { data: ActivityRow[] | null };
-      const { data: vetsData } = vetsRes as { data: VetWorkloadRow[] | null };
-      setFarms(farmsData || []);
-      setActivities(actData || []);
-      setVets(vetsData || []);
-      setLoading(false);
     };
     load();
   }, []);
