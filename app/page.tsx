@@ -1,23 +1,32 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import LandingPage from "./(marketing)/page";
 
-export default async function RootPage() {
-  let isAuthenticated = false;
+export default function RootPage() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
 
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    isAuthenticated = !!user;
-  } catch {
-    // Supabase not configured — treat as unauthenticated
-  }
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          router.push("/dashboard");
+          return;
+        }
+      } catch {
+        // Supabase not configured — treat as unauthenticated
+      }
+      setChecking(false);
+    };
+    check();
+  }, [router]);
 
-  if (isAuthenticated) {
-    redirect("/dashboard");
-  }
+  if (checking) return null;
 
   return <LandingPage />;
 }

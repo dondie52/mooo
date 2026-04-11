@@ -102,10 +102,10 @@ export default function HealthClient({ events, animals }: HealthClientProps) {
                 {filtered.map((evt) => {
                   const tag = evt.animals?.tag_number ?? "Unknown";
                   return (
-                    <tr key={evt.event_id} onClick={() => router.push(`/animals/${evt.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
+                    <tr key={evt.event_id} onClick={() => router.push(`/animals/detail?id=${evt.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
                       <td className="px-6 py-3 text-muted whitespace-nowrap">{formatDate(evt.event_date)}</td>
                       <td className="px-6 py-3">
-                        <Link href={`/animals/${evt.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
+                        <Link href={`/animals/detail?id=${evt.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
                           {tag}
                         </Link>
                       </td>

@@ -72,10 +72,10 @@ export default function BreedingClient({ records, animals, calvings }: BreedingC
                   </thead>
                   <tbody>
                     {sortedRecords.map((b) => (
-                      <tr key={b.breeding_id} onClick={() => router.push(`/animals/${b.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
+                      <tr key={b.breeding_id} onClick={() => router.push(`/animals/detail?id=${b.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
                         <td className="px-6 py-3 text-muted whitespace-nowrap">{formatDate(b.event_date)}</td>
                         <td className="px-6 py-3">
-                          <Link href={`/animals/${b.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
+                          <Link href={`/animals/detail?id=${b.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
                             {b.animals?.tag_number ?? "Unknown"}
                           </Link>
                         </td>
@@ -114,7 +114,7 @@ export default function BreedingClient({ records, animals, calvings }: BreedingC
                   return (
                     <div key={`${c.animal_id}-${c.expected_date}`} className="p-3 rounded-lg bg-earth-cream/60">
                       <div className="flex items-center justify-between mb-1">
-                        <Link href={`/animals/${c.animal_id}`} className="text-sm font-semibold text-forest-deep hover:text-forest-accent">
+                        <Link href={`/animals/detail?id=${c.animal_id}`} className="text-sm font-semibold text-forest-deep hover:text-forest-accent">
                           {c.tag_number}
                         </Link>
                         <span className={cn("badge", days <= 14 ? "badge-amber" : "badge-green")}>

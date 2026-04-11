@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { animalSchema, type AnimalFormData } from "@/lib/validators/animal";
@@ -24,8 +24,8 @@ const initial: AnimalFormData = {
 
 export default function EditAnimalPage() {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
 
   const [animal, setAnimal] = useState<Tables<"animals"> | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -36,13 +36,13 @@ export default function EditAnimalPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!id) { setNotFound(true); setFetchLoading(false); return; }
     async function fetchAnimal() {
       const supabase = createClient();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- select types resolve to `never` due to generated type mismatch; safe at runtime
       const { data, error: fetchError } = await supabase
         .from("animals")
         .select("*")
-        .eq("animal_id", id)
+        .eq("animal_id", id!)
         .single() as { data: Tables<"animals"> | null; error: any };
 
       if (fetchError || !data) {
@@ -93,7 +93,6 @@ export default function EditAnimalPage() {
     setError(null);
 
     const supabase = createClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- update types resolve to `never` due to generated type mismatch; safe at runtime
     const { error: updateError } = await (supabase.from("animals") as any).update({
       tag_number: result.data.tag_number,
       lits_tag: result.data.lits_tag || null,
@@ -114,8 +113,7 @@ export default function EditAnimalPage() {
       return;
     }
 
-    router.push(`/animals/${id}`);
-    router.refresh();
+    router.push(`/animals/detail?id=${id}`);
   }
 
   if (fetchLoading) {
@@ -146,7 +144,7 @@ export default function EditAnimalPage() {
 
   return (
     <div className="space-y-6">
-      <Link href={`/animals/${id}`} className="inline-flex items-center gap-2 text-sm text-muted hover:text-forest-mid">
+      <Link href={`/animals/detail?id=${id}`} className="inline-flex items-center gap-2 text-sm text-muted hover:text-forest-mid">
         <ArrowLeft className="w-4 h-4" /> Back to {animal.tag_number}
       </Link>
 

@@ -1,38 +1,38 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import BreedingClient from "@/components/breeding/BreedingClient";
 
-type CalvingRow = { animal_id: string; tag_number: string; expected_date: string };
+export default function BreedingPage() {
+  const router = useRouter();
+  const [records, setRecords] = useState<any[]>([]);
+  const [animals, setAnimals] = useState<any[]>([]);
+  const [calvings, setCalvings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function BreedingPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  useEffect(() => {
+    const load = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push("/login"); return; }
 
-  const recordsP = supabase
-    .from("breeding_records")
-    .select("*, animals(tag_number, breed)")
-    .order("event_date", { ascending: false });
+      const [{ data: rec }, { data: an }, { data: calv }] = await Promise.all([
+        supabase.from("breeding_records").select("*, animals(tag_number, breed)").order("event_date", { ascending: false }),
+        supabase.from("animals").select("animal_id, tag_number, breed, gender, status").eq("status", "active").order("tag_number"),
+        supabase.rpc("get_upcoming_calvings"),
+      ]);
 
-  const animalsP = supabase
-    .from("animals")
-    .select("animal_id, tag_number, breed, gender, status")
-    .eq("status", "active")
-    .order("tag_number");
+      setRecords(rec ?? []);
+      setAnimals(an ?? []);
+      setCalvings((calv as any[] | null) ?? []);
+      setLoading(false);
+    };
+    load();
+  }, [router]);
 
-  const calvingsP = supabase.rpc("get_upcoming_calvings");
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-2 border-forest-mid border-t-transparent rounded-full" /></div>;
 
-  const { data: records } = await recordsP;
-  const { data: animals } = await animalsP;
-  const { data: calvings } = await calvingsP as { data: CalvingRow[] | null };
-
-  return (
-    <BreedingClient
-      records={(records ?? []) as any}
-      animals={animals ?? []}
-      calvings={calvings ?? []}
-    />
-  );
+  return <BreedingClient records={records} animals={animals} calvings={calvings} />;
 }

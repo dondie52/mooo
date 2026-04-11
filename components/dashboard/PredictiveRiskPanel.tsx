@@ -66,7 +66,7 @@ export default function PredictiveRiskPanel({
             return (
               <Link
                 key={key}
-                href={`/animals/${animal.animal_id}`}
+                href={`/animals/detail?id=${animal.animal_id}`}
                 className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-accent"
               >
                 {row}

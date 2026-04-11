@@ -85,7 +85,7 @@ export default function AnimalDetailClient({
             {animal.lits_tag && <p className="text-sm text-muted">LITS: {animal.lits_tag}</p>}
           </div>
           <div className="flex gap-2">
-            <Link href={`/animals/${animal.animal_id}/edit`} className="btn-secondary">
+            <Link href={`/animals/edit?id=${animal.animal_id}`} className="btn-secondary">
               <Pencil className="w-4 h-4" /> Edit
             </Link>
             <button

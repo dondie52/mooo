@@ -20,17 +20,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-      - name: Build static site
-        run: |
-          mkdir -p _site
-          cp docs/index.html _site/index.html 2>/dev/null || echo "No index.html found"
+      - run: npm ci
+
+      - name: Build Next.js static export
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: out
 
   deploy:
     environment:

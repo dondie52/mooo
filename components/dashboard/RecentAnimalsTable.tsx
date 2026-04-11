@@ -75,7 +75,7 @@ export default function RecentAnimalsTable({
             {animals.map((animal) => (
               <tr
                 key={animal.animal_id}
-                onClick={() => router.push(`/animals/${animal.animal_id}`)}
+                onClick={() => router.push(`/animals/detail?id=${animal.animal_id}`)}
                 className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer"
               >
                 <td className="px-6 py-3 font-medium text-forest-deep">

@@ -143,7 +143,7 @@ export default function AlertsClient({ alerts: initialAlerts }: AlertsClientProp
                     <p className="text-sm text-muted mt-0.5">{alert.message}</p>
                     <div className="flex items-center gap-3 mt-2">
                       {alert.animal_id && (
-                        <Link href={`/animals/${alert.animal_id}`} className="text-xs font-medium text-forest-accent hover:text-forest-mid">
+                        <Link href={`/animals/detail?id=${alert.animal_id}`} className="text-xs font-medium text-forest-accent hover:text-forest-mid">
                           View animal
                         </Link>
                       )}

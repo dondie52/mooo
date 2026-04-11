@@ -1,16 +1,33 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import AnimalsClient from "@/components/animals/AnimalsClient";
 
-export default async function AnimalsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+export default function AnimalsPage() {
+  const router = useRouter();
+  const [animals, setAnimals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: animals } = await supabase
-    .from("animals")
-    .select("*")
-    .order("created_at", { ascending: false });
+  useEffect(() => {
+    const load = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push("/login"); return; }
 
-  return <AnimalsClient animals={animals ?? []} />;
+      const { data } = await supabase
+        .from("animals")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      setAnimals(data ?? []);
+      setLoading(false);
+    };
+    load();
+  }, [router]);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-2 border-forest-mid border-t-transparent rounded-full" /></div>;
+
+  return <AnimalsClient animals={animals} />;
 }

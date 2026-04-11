@@ -81,9 +81,9 @@ export default function VaccinationsClient({ vaccinations, animals }: Vaccinatio
                   {overdue.map((v) => {
                     const days = Math.abs(daysFromNow(v.next_due_date!));
                     return (
-                      <tr key={v.vacc_id} onClick={() => router.push(`/animals/${v.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
+                      <tr key={v.vacc_id} onClick={() => router.push(`/animals/detail?id=${v.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
                         <td className="px-6 py-3">
-                          <Link href={`/animals/${v.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
+                          <Link href={`/animals/detail?id=${v.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
                             {v.animals?.tag_number ?? "Unknown"}
                           </Link>
                         </td>
@@ -123,9 +123,9 @@ export default function VaccinationsClient({ vaccinations, animals }: Vaccinatio
                   {upcoming.map((v) => {
                     const days = daysFromNow(v.next_due_date!);
                     return (
-                      <tr key={v.vacc_id} onClick={() => router.push(`/animals/${v.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
+                      <tr key={v.vacc_id} onClick={() => router.push(`/animals/detail?id=${v.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
                         <td className="px-6 py-3">
-                          <Link href={`/animals/${v.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
+                          <Link href={`/animals/detail?id=${v.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
                             {v.animals?.tag_number ?? "Unknown"}
                           </Link>
                         </td>
@@ -163,10 +163,10 @@ export default function VaccinationsClient({ vaccinations, animals }: Vaccinatio
                 </thead>
                 <tbody>
                   {allRecords.map((v) => (
-                    <tr key={v.vacc_id} onClick={() => router.push(`/animals/${v.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
+                    <tr key={v.vacc_id} onClick={() => router.push(`/animals/detail?id=${v.animal_id}`)} className="border-b border-border/50 last:border-0 hover:bg-earth-cream/50 transition-colors cursor-pointer">
                       <td className="px-6 py-3 text-muted whitespace-nowrap">{formatDate(v.date_given)}</td>
                       <td className="px-6 py-3">
-                        <Link href={`/animals/${v.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
+                        <Link href={`/animals/detail?id=${v.animal_id}`} className="font-medium text-forest-deep hover:text-forest-accent">
                           {v.animals?.tag_number ?? "Unknown"}
                         </Link>
                       </td>
