@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FarmerDashboard from "@/components/dashboard/FarmerDashboard";
 import VetDashboard from "@/components/dashboard/VetDashboard";
+import AdminDashboard from "@/components/dashboard/AdminDashboard";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function DashboardPage() {
     );
   }
 
+  if (role === "admin") return <AdminDashboard />;
   if (role === "vet") return <VetDashboard />;
   return <FarmerDashboard />;
 }

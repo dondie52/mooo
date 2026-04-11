@@ -14,6 +14,9 @@ import {
   LogOut,
   Menu,
   X,
+  Link2,
+  ScrollText,
+  UserPlus,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { CowIcon } from "@/components/ui/CowIcon";
@@ -78,10 +81,37 @@ const vetNavGroups = [
   },
 ];
 
-const adminGroup = {
-  label: "Administration",
-  items: [{ name: "Users", href: "/admin/users", icon: Users }],
-};
+const adminNavGroups = [
+  {
+    label: "Overview",
+    items: [
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, exact: true },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { name: "Users", href: "/admin/users", icon: Users },
+      { name: "Vet Assignments", href: "/admin/vet-assignments", icon: Link2 },
+      { name: "Audit Log", href: "/admin/audit-log", icon: ScrollText },
+    ],
+  },
+  {
+    label: "Livestock",
+    items: [
+      { name: "All Animals", href: "/animals", icon: Beef },
+      { name: "Health Events", href: "/health", icon: HeartPulse },
+      { name: "Vaccinations", href: "/vaccinations", icon: Syringe },
+    ],
+  },
+  {
+    label: "Compliance",
+    items: [
+      { name: "Reports", href: "/reports", icon: FileText },
+      { name: "Alerts", href: "/alerts", icon: Bell },
+    ],
+  },
+];
 
 export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
   const pathname = usePathname();
@@ -112,7 +142,7 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
 
   const groups =
     profile.role === "admin"
-      ? [...navGroups, adminGroup]
+      ? adminNavGroups
       : profile.role === "vet"
       ? vetNavGroups
       : navGroups;
@@ -231,6 +261,15 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
           >
             <HeartPulse className="w-4 h-4" />
             Log Health Event
+          </Link>
+        )}
+        {profile.role === "admin" && (
+          <Link
+            href="/admin/users/new"
+            className="btn-gold w-full justify-center text-sm mb-3 flex items-center gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add User
           </Link>
         )}
         <button
