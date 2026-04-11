@@ -53,6 +53,31 @@ const navGroups = [
   },
 ];
 
+const vetNavGroups = [
+  {
+    label: "Overview",
+    items: [
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, exact: true },
+    ],
+  },
+  {
+    label: "My Practice",
+    items: [
+      { name: "Assigned Farmers", href: "/farmers", icon: Users },
+      { name: "Animals", href: "/animals", icon: Beef },
+      { name: "Health Events", href: "/health", icon: HeartPulse },
+      { name: "Vaccinations", href: "/vaccinations", icon: Syringe },
+    ],
+  },
+  {
+    label: "Compliance",
+    items: [
+      { name: "Reports", href: "/reports", icon: FileText },
+      { name: "Alerts", href: "/alerts", icon: Bell },
+    ],
+  },
+];
+
 const adminGroup = {
   label: "Administration",
   items: [{ name: "Users", href: "/admin/users", icon: Users }],
@@ -86,7 +111,11 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
   }, [pathname]);
 
   const groups =
-    profile.role === "admin" ? [...navGroups, adminGroup] : navGroups;
+    profile.role === "admin"
+      ? [...navGroups, adminGroup]
+      : profile.role === "vet"
+      ? vetNavGroups
+      : navGroups;
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -193,8 +222,17 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Logout */}
+      {/* Vet CTA + Logout */}
       <div className="p-3 mt-auto">
+        {profile.role === "vet" && (
+          <Link
+            href="/health"
+            className="btn-gold w-full justify-center text-sm mb-3 flex items-center gap-2"
+          >
+            <HeartPulse className="w-4 h-4" />
+            Log Health Event
+          </Link>
+        )}
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-earth-stone/60 hover:text-earth-cream hover:bg-forest-mid/50 transition-colors w-full"

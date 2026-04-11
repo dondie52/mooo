@@ -550,6 +550,43 @@ export type Database = {
           month: string
         }[]
       }
+      get_vet_assigned_farmers: {
+        Args: { vet_uuid: string }
+        Returns: {
+          farmer_id: string
+          full_name: string
+          farm_name: string | null
+          district: string | null
+          animal_count: number
+          coverage_pct: number
+          overdue_count: number
+          last_visit_date: string | null
+        }[]
+      }
+      get_vet_active_cases: {
+        Args: { vet_uuid: string }
+        Returns: {
+          event_id: string
+          animal_id: string
+          tag_number: string
+          condition_name: string | null
+          severity: string | null
+          event_date: string
+          farmer_name: string
+          outcome: string
+        }[]
+      }
+      get_vet_upcoming_vaccinations: {
+        Args: { vet_uuid: string; days?: number }
+        Returns: {
+          vacc_id: string
+          animal_id: string
+          tag_number: string
+          vaccine_name: string
+          next_due_date: string
+          farmer_name: string
+        }[]
+      }
     }
     Enums: {
       acquired_how: "born" | "purchased" | "donated" | "inherited" | "other"
