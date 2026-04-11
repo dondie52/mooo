@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -8,10 +8,13 @@ import { healthEventSchema, type HealthEventFormData } from "@/lib/validators/he
 import { createClient } from "@/lib/supabase/client";
 import type { Tables, TablesInsert } from "@/lib/supabase/database.types";
 
+type HealthEvent = Tables<"health_events">;
+
 interface LogHealthEventModalProps {
   open: boolean;
   onClose: () => void;
   animals: Pick<Tables<"animals">, "animal_id" | "tag_number" | "breed" | "status">[];
+  editEvent?: HealthEvent | null;
 }
 
 const initial: HealthEventFormData = {
@@ -28,12 +31,35 @@ const initial: HealthEventFormData = {
   notes: "",
 };
 
-export default function LogHealthEventModal({ open, onClose, animals }: LogHealthEventModalProps) {
+export default function LogHealthEventModal({ open, onClose, animals, editEvent }: LogHealthEventModalProps) {
   const router = useRouter();
   const toast = useToast();
   const [form, setForm] = useState<HealthEventFormData>(initial);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [loading, setLoading] = useState(false);
+
+  const isEditMode = Boolean(editEvent);
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editEvent) {
+      setForm({
+        animal_id: editEvent.animal_id,
+        event_date: editEvent.event_date,
+        event_type: editEvent.event_type,
+        condition_name: editEvent.condition_name ?? "",
+        severity: editEvent.severity ?? undefined,
+        symptoms: editEvent.symptoms ?? "",
+        treatment_given: editEvent.treatment_given ?? "",
+        vet_name: editEvent.vet_name ?? "",
+        outcome: editEvent.outcome ?? undefined,
+        followup_date: editEvent.followup_date ?? "",
+        notes: editEvent.notes ?? "",
+      });
+    } else {
+      setForm(initial);
+    }
+  }, [editEvent]);
 
   function set(key: string, value: string | undefined) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -58,52 +84,65 @@ export default function LogHealthEventModal({ open, onClose, animals }: LogHealt
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setLoading(false);
-      toast({ message: "You must be logged in to log events", variant: "error" });
+      toast({ message: "You must be logged in", variant: "error" });
       return;
     }
 
-    const row: TablesInsert<"health_events"> = {
+    const row = {
       animal_id: result.data.animal_id,
       event_date: result.data.event_date,
-      event_type: result.data.event_type as TablesInsert<"health_events">["event_type"],
+      event_type: result.data.event_type,
       condition_name: result.data.condition_name || null,
-      severity: (result.data.severity as TablesInsert<"health_events">["severity"]) || null,
+      severity: result.data.severity || null,
       symptoms: result.data.symptoms || null,
       treatment_given: result.data.treatment_given || null,
       vet_name: result.data.vet_name || null,
-      outcome: (result.data.outcome as TablesInsert<"health_events">["outcome"]) || null,
+      outcome: result.data.outcome || null,
       followup_date: result.data.followup_date || null,
       notes: result.data.notes || null,
-      logged_by: user.id,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- insert types resolve to `never` due to generated type mismatch; safe at runtime
-    const { error: insertError } = await supabase.from("health_events").insert(row as any);
+    let error;
+    if (isEditMode && editEvent) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = await (supabase.from("health_events") as any).update(row).eq("event_id", editEvent.event_id);
+      error = res.error;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = await supabase.from("health_events").insert({ ...row, logged_by: user.id } as any);
+      error = res.error;
+    }
 
-    if (insertError) {
+    if (error) {
       setLoading(false);
-      toast({ message: "Failed to log health event", variant: "error" });
+      toast({ message: `Failed to ${isEditMode ? "update" : "log"} health event`, variant: "error" });
       return;
     }
 
     setForm(initial);
     setLoading(false);
     onClose();
-    toast({ message: "Health event logged successfully", variant: "success" });
+    toast({ message: `Health event ${isEditMode ? "updated" : "logged"} successfully`, variant: "success" });
     router.refresh();
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Log Health Event">
+    <Modal open={open} onClose={onClose} title={isEditMode ? "Edit Health Event" : "Log Health Event"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="label">Animal *</label>
-          <select className="input" value={form.animal_id} onChange={(e) => set("animal_id", e.target.value)}>
+          <select
+            className="input"
+            value={form.animal_id}
+            onChange={(e) => set("animal_id", e.target.value)}
+            disabled={isEditMode}
+          >
             <option value="">Select animal…</option>
             {animals.map((a) => (
               <option key={a.animal_id} value={a.animal_id}>{a.tag_number} — {a.breed}</option>
             ))}
           </select>
+          {isEditMode && <p className="text-[10px] text-muted mt-1">Animal cannot be changed when editing</p>}
           {errors.animal_id && <p className="text-xs text-alert-red mt-1">{errors.animal_id}</p>}
         </div>
 
@@ -177,7 +216,7 @@ export default function LogHealthEventModal({ open, onClose, animals }: LogHealt
 
         <div className="pt-2 flex gap-3">
           <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center h-11 disabled:opacity-60">
-            {loading ? <><span className="spinner" /> Saving…</> : "Log Event"}
+            {loading ? <><span className="spinner" /> Saving…</> : isEditMode ? "Update Event" : "Log Event"}
           </button>
           <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center h-11">
             Cancel

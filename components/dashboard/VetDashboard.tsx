@@ -9,6 +9,7 @@ import FarmsComplianceTable from "@/components/dashboard/FarmsComplianceTable";
 import ActiveCasesPanel from "@/components/dashboard/ActiveCasesPanel";
 import UpcomingVaccinationsPanel from "@/components/dashboard/UpcomingVaccinationsPanel";
 import VetRecentEventsTable from "@/components/dashboard/VetRecentEventsTable";
+import DiseaseFrequencyChart from "@/components/charts/DiseaseFrequencyChart";
 
 type VetFarmerRow = {
   farmer_id: string;
@@ -48,6 +49,7 @@ export default function VetDashboard() {
   const [activeCases, setActiveCases] = useState<ActiveCaseRow[]>([]);
   const [upcomingVaccs, setUpcomingVaccs] = useState<UpcomingVaccRow[]>([]);
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
+  const [diseaseFreq, setDiseaseFreq] = useState<{ condition_name: string; count: number }[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -60,7 +62,7 @@ export default function VetDashboard() {
         return;
       }
 
-      const [farmersRes, casesRes, vaccsRes, eventsRes] = await Promise.all([
+      const [farmersRes, casesRes, vaccsRes, eventsRes, diseaseRes] = await Promise.all([
         (supabase.rpc as any)("get_vet_assigned_farmers", { vet_uuid: user.id }),
         (supabase.rpc as any)("get_vet_active_cases", { vet_uuid: user.id }),
         (supabase.rpc as any)("get_vet_upcoming_vaccinations", { vet_uuid: user.id }),
@@ -70,6 +72,7 @@ export default function VetDashboard() {
           .eq("logged_by", user.id)
           .order("event_date", { ascending: false })
           .limit(10),
+        (supabase.rpc as any)("get_vet_disease_frequency", { vet_uuid: user.id }),
       ]);
 
       const { data: farmersData } = farmersRes as {
@@ -82,10 +85,13 @@ export default function VetDashboard() {
         data: UpcomingVaccRow[] | null;
       };
 
+      const { data: diseaseData } = diseaseRes as { data: { condition_name: string; count: number }[] | null };
+
       setFarmers(farmersData ?? []);
       setActiveCases(casesData ?? []);
       setUpcomingVaccs(vaccsData ?? []);
       setRecentEvents(eventsRes.data ?? []);
+      setDiseaseFreq(diseaseData ?? []);
       setLoading(false);
     };
     load();
@@ -187,16 +193,21 @@ export default function VetDashboard() {
       </div>
 
       <div className="bento-grid stagger-children">
-        <div className="bento-span-7">
-          <ActiveCasesPanel cases={activeCases} />
+        <div className="bento-span-6">
+          <DiseaseFrequencyChart data={diseaseFreq} />
         </div>
-        <div className="bento-span-5">
-          <UpcomingVaccinationsPanel vaccinations={upcomingVaccs} />
+        <div className="bento-span-6">
+          <ActiveCasesPanel cases={activeCases} />
         </div>
       </div>
 
-      <div className="animate-fade-up">
-        <VetRecentEventsTable events={recentFormatted} />
+      <div className="bento-grid stagger-children">
+        <div className="bento-span-6">
+          <UpcomingVaccinationsPanel vaccinations={upcomingVaccs} />
+        </div>
+        <div className="bento-span-6">
+          <VetRecentEventsTable events={recentFormatted} />
+        </div>
       </div>
     </div>
   );

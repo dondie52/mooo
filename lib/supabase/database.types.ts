@@ -587,6 +587,13 @@ export type Database = {
           farmer_name: string
         }[]
       }
+      get_vet_disease_frequency: {
+        Args: { vet_uuid: string }
+        Returns: {
+          condition_name: string
+          count: number
+        }[]
+      }
     }
     Enums: {
       acquired_how: "born" | "purchased" | "donated" | "inherited" | "other"

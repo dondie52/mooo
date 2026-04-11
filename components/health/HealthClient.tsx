@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { HeartPulse, Plus } from "lucide-react";
+import { HeartPulse, Plus, Pencil } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import type { Tables } from "@/lib/supabase/database.types";
 import SearchInput from "@/components/ui/SearchInput";
@@ -44,6 +44,7 @@ export default function HealthClient({ events, animals }: HealthClientProps) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Tables<"health_events"> | null>(null);
 
   const filtered = events
     .filter((evt) => {
@@ -66,7 +67,7 @@ export default function HealthClient({ events, animals }: HealthClientProps) {
           <h1 className="font-display text-2xl sm:text-3xl font-semibold">Health Events</h1>
           <p className="text-sm text-muted mt-1">Disease, injury, and treatment records</p>
         </div>
-        <button onClick={() => setModalOpen(true)} className="btn-primary shrink-0">
+        <button onClick={() => { setEditingEvent(null); setModalOpen(true); }} className="btn-primary shrink-0">
           <Plus className="w-4 h-4" /> Log Event
         </button>
       </div>
@@ -93,7 +94,7 @@ export default function HealthClient({ events, animals }: HealthClientProps) {
               <caption className="sr-only">Health events with date, animal, condition, severity, and outcome</caption>
               <thead>
                 <tr className="border-b border-border">
-                  {["Date", "Animal", "Type", "Condition", "Severity", "Treatment", "Outcome", "Vet"].map((h) => (
+                  {["Date", "Animal", "Type", "Condition", "Severity", "Treatment", "Outcome", "Vet", ""].map((h) => (
                     <th key={h} className="text-left px-6 pb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">{h}</th>
                   ))}
                 </tr>
@@ -123,6 +124,15 @@ export default function HealthClient({ events, animals }: HealthClientProps) {
                         ) : "—"}
                       </td>
                       <td className="px-6 py-3 text-muted">{evt.vet_name || "—"}</td>
+                      <td className="px-6 py-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingEvent(evt); setModalOpen(true); }}
+                          className="p-1.5 rounded-md hover:bg-earth-sand text-muted hover:text-forest-deep transition-colors"
+                          title="Edit event"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -132,7 +142,12 @@ export default function HealthClient({ events, animals }: HealthClientProps) {
         </div>
       )}
 
-      <LogHealthEventModal open={modalOpen} onClose={() => setModalOpen(false)} animals={animals} />
+      <LogHealthEventModal
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setEditingEvent(null); }}
+        animals={animals}
+        editEvent={editingEvent}
+      />
     </div>
   );
 }
