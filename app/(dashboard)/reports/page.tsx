@@ -18,7 +18,7 @@ export default function ReportsPage() {
 
       const [{ data: animals }, { data: vaccinations }, { data: healthEvents }, { data: movements }] = await Promise.all([
         supabase.from("animals").select("*").order("tag_number"),
-        supabase.from("vaccinations").select("*, animals(tag_number, lits_tag)").order("date_given", { ascending: false }),
+        supabase.from("vaccinations").select("*, animals(tag_number)").order("date_given", { ascending: false }),
         supabase.from("health_events").select("*, animals(tag_number)").order("event_date", { ascending: false }),
         supabase.from("movements").select("*, animals(tag_number)").order("movement_date", { ascending: false }),
       ]);

@@ -10,7 +10,6 @@ import type { Tables } from "@/lib/supabase/database.types";
 
 const initial: AnimalFormData = {
   tag_number: "",
-  lits_tag: "",
   animal_type: "cattle",
   breed: "",
   gender: "female",
@@ -54,7 +53,6 @@ export default function EditAnimalPage() {
       setAnimal(data);
       setForm({
         tag_number: data.tag_number,
-        lits_tag: data.lits_tag ?? "",
         animal_type: data.animal_type,
         breed: data.breed,
         gender: data.gender,
@@ -95,7 +93,6 @@ export default function EditAnimalPage() {
     const supabase = createClient();
     const { error: updateError } = await (supabase.from("animals") as any).update({
       tag_number: result.data.tag_number,
-      lits_tag: result.data.lits_tag || null,
       animal_type: result.data.animal_type,
       breed: result.data.breed,
       gender: result.data.gender,
@@ -167,12 +164,6 @@ export default function EditAnimalPage() {
             <Field label="Tag Number *" error={errors.tag_number}>
               <input className="input" value={form.tag_number} onChange={(e) => set("tag_number", e.target.value)} />
             </Field>
-            <Field label="LITS Tag" error={errors.lits_tag}>
-              <input className="input" value={form.lits_tag} onChange={(e) => set("lits_tag", e.target.value)} />
-            </Field>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Animal Type *" error={errors.animal_type}>
               <select className="input" value={form.animal_type} onChange={(e) => set("animal_type", e.target.value as AnimalFormData["animal_type"])}>
                 <option value="cattle">Cattle</option>

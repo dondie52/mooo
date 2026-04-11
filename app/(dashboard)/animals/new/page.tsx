@@ -7,9 +7,18 @@ import { ArrowLeft } from "lucide-react";
 import { animalSchema, type AnimalFormData } from "@/lib/validators/animal";
 import { createClient } from "@/lib/supabase/client";
 
+const CATTLE_BREEDS = ["Brahman", "Tswana", "Cross", "Angus", "Hereford", "Simmental", "Other"];
+const GOAT_BREEDS = ["Tswana", "Boer", "Kalahari Red", "Saanen", "Cross", "Other"];
+const SHEEP_BREEDS = ["Dorper", "Karakul", "Merino", "Tswana", "Cross", "Other"];
+
+function breedsForType(type: string) {
+  if (type === "goat") return GOAT_BREEDS;
+  if (type === "sheep") return SHEEP_BREEDS;
+  return CATTLE_BREEDS;
+}
+
 const initial: AnimalFormData = {
   tag_number: "",
-  lits_tag: "",
   animal_type: "cattle",
   breed: "",
   gender: "female",
@@ -27,6 +36,7 @@ export default function NewAnimalPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof AnimalFormData, string>>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [breedSelection, setBreedSelection] = useState("");
 
   function set<K extends keyof AnimalFormData>(key: K, value: AnimalFormData[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -60,7 +70,6 @@ export default function NewAnimalPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- insert types resolve to `never` due to generated type mismatch; safe at runtime
     const { error: insertError } = await (supabase.from("animals") as any).insert({
       tag_number: result.data.tag_number,
-      lits_tag: result.data.lits_tag || null,
       animal_type: result.data.animal_type,
       breed: result.data.breed,
       gender: result.data.gender,
@@ -108,21 +117,43 @@ export default function NewAnimalPage() {
             <Field label="Tag Number *" error={errors.tag_number}>
               <input className="input" value={form.tag_number} onChange={(e) => set("tag_number", e.target.value)} placeholder="e.g. BW-KW-0001" />
             </Field>
-            <Field label="LITS Tag" error={errors.lits_tag}>
-              <input className="input" value={form.lits_tag} onChange={(e) => set("lits_tag", e.target.value)} placeholder="e.g. LITS-1234" />
-            </Field>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Animal Type *" error={errors.animal_type}>
-              <select className="input" value={form.animal_type} onChange={(e) => set("animal_type", e.target.value as AnimalFormData["animal_type"])}>
+              <select className="input" value={form.animal_type} onChange={(e) => {
+                set("animal_type", e.target.value as AnimalFormData["animal_type"]);
+                setBreedSelection("");
+                set("breed", "");
+              }}>
                 <option value="cattle">Cattle</option>
                 <option value="goat">Goat</option>
                 <option value="sheep">Sheep</option>
               </select>
             </Field>
             <Field label="Breed *" error={errors.breed}>
-              <input className="input" value={form.breed} onChange={(e) => set("breed", e.target.value)} placeholder="e.g. Tswana, Brahman" />
+              <select
+                className="input"
+                value={breedSelection}
+                onChange={(e) => {
+                  setBreedSelection(e.target.value);
+                  if (e.target.value !== "Other") {
+                    set("breed", e.target.value);
+                  } else {
+                    set("breed", "");
+                  }
+                }}
+              >
+                <option value="">— Select —</option>
+                {breedsForType(form.animal_type).map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+              {breedSelection === "Other" && (
+                <input
+                  className="input mt-2"
+                  value={form.breed}
+                  onChange={(e) => set("breed", e.target.value)}
+                  placeholder="Enter breed name"
+                />
+              )}
             </Field>
           </div>
 

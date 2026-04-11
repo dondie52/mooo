@@ -7,7 +7,7 @@ import type { Tables } from "@/lib/supabase/database.types";
 import type { LucideIcon } from "lucide-react";
 
 type Animal = Tables<"animals">;
-type Vaccination = Tables<"vaccinations"> & { animals: { tag_number: string; lits_tag: string | null } | null };
+type Vaccination = Tables<"vaccinations"> & { animals: { tag_number: string } | null };
 type HealthEvent = Tables<"health_events"> & { animals: { tag_number: string } | null };
 type Movement = Tables<"movements"> & { animals: { tag_number: string } | null };
 
@@ -160,11 +160,10 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
       ],
       onExport: (from, to) => {
         const filtered = filterByDateRange(vaccinations, "date_given", from, to);
-        const headers = ["animal_tag", "lits_tag", "vaccine_name", "date_given", "next_due_date", "vet_name", "batch_number", "status"];
+        const headers = ["animal_tag", "vaccine_name", "date_given", "next_due_date", "vet_name", "batch_number", "status"];
         downloadCsv("vaccination_compliance.csv", headers,
           filtered.map((v) => ({
             animal_tag: v.animals?.tag_number ?? "",
-            lits_tag: v.animals?.lits_tag ?? "",
             vaccine_name: v.vaccine_name,
             date_given: v.date_given,
             next_due_date: v.next_due_date ?? "",
@@ -176,11 +175,10 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
       },
       onPrint: (from, to) => {
         const filtered = filterByDateRange(vaccinations, "date_given", from, to);
-        const headers = ["animal_tag", "lits_tag", "vaccine_name", "date_given", "next_due_date", "status"];
+        const headers = ["animal_tag", "vaccine_name", "date_given", "next_due_date", "status"];
         printReport("Vaccination Compliance Certificate", headers,
           filtered.map((v) => ({
             animal_tag: v.animals?.tag_number ?? "",
-            lits_tag: v.animals?.lits_tag ?? "",
             vaccine_name: v.vaccine_name,
             date_given: v.date_given,
             next_due_date: v.next_due_date ?? "",
@@ -284,11 +282,10 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
         { label: "Deceased", value: animals.filter((a) => a.status === "deceased").length },
       ],
       onExport: () => {
-        const headers = ["tag_number", "lits_tag", "breed", "gender", "location", "status", "date_of_birth", "acquired_date"];
+        const headers = ["tag_number", "breed", "gender", "location", "status", "date_of_birth", "acquired_date"];
         downloadCsv("herd_inventory.csv", headers,
           animals.map((a) => ({
             tag_number: a.tag_number,
-            lits_tag: a.lits_tag ?? "",
             breed: a.breed,
             gender: a.gender,
             location: a.location ?? "",
@@ -299,11 +296,10 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
         );
       },
       onPrint: () => {
-        const headers = ["tag_number", "lits_tag", "breed", "gender", "location", "status", "acquired_date"];
+        const headers = ["tag_number", "breed", "gender", "location", "status", "acquired_date"];
         printReport("Herd Inventory Report", headers,
           animals.map((a) => ({
             tag_number: a.tag_number,
-            lits_tag: a.lits_tag ?? "",
             breed: a.breed,
             gender: a.gender,
             location: a.location ?? "",

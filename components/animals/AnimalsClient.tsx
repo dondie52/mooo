@@ -41,8 +41,7 @@ export default function AnimalsClient({ animals }: AnimalsClientProps) {
       !q ||
       a.tag_number.toLowerCase().includes(q) ||
       a.breed.toLowerCase().includes(q) ||
-      (a.location ?? "").toLowerCase().includes(q) ||
-      (a.lits_tag ?? "").toLowerCase().includes(q);
+      (a.location ?? "").toLowerCase().includes(q);
     return matchesStatus && matchesSearch;
   });
 
@@ -98,7 +97,7 @@ export default function AnimalsClient({ animals }: AnimalsClientProps) {
               <caption className="sr-only">List of animals with tag, breed, location, and status</caption>
               <thead>
                 <tr className="border-b border-border">
-                  {["Tag", "LITS", "Breed", "Gender", "Location", "Status", "Acquired"].map((h) => (
+                  {["Tag", "Breed", "Gender", "Location", "Status", "Acquired"].map((h) => (
                     <th key={h} className="text-left px-6 pb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
                       {h}
                     </th>
@@ -113,7 +112,6 @@ export default function AnimalsClient({ animals }: AnimalsClientProps) {
                         {animal.tag_number}
                       </Link>
                     </td>
-                    <td className="px-6 py-3 text-muted">{animal.lits_tag || "\u2014"}</td>
                     <td className="px-6 py-3 text-muted">{animal.breed}</td>
                     <td className="px-6 py-3 text-muted capitalize">{animal.gender}</td>
                     <td className="px-6 py-3 text-muted">{animal.location || "\u2014"}</td>

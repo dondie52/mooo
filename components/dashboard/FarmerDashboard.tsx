@@ -98,7 +98,7 @@ export default function FarmerDashboard() {
       {hasCriticalAlert && (
         <CriticalAlertCard
           title="Vaccination Compliance Warning"
-          message={`${overdueCount} animals have overdue vaccinations. Your BMC compliance may be affected if not addressed within 7 days.`}
+          message={`${overdueCount} animals have overdue vaccinations. Your compliance may be affected if not addressed within 7 days.`}
           action={{ label: "View overdue", href: "/vaccinations" }}
         />
       )}

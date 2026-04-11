@@ -11,7 +11,7 @@ const features = [
   {
     icon: Tag,
     title: "Digital Animal Records",
-    desc: "Register every animal with tag, breed, LITS bolus tag, location, and full history. Searchable and always accessible.",
+    desc: "Register every animal with tag, breed, location, and full history. Searchable and always accessible.",
   },
   {
     icon: Syringe,

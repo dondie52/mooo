@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Baby, Plus, Clock } from "lucide-react";
+import { HeartHandshake, Plus, Clock } from "lucide-react";
 import { cn, formatDate, daysFromNow } from "@/lib/utils";
 import EmptyState from "@/components/ui/EmptyState";
 import RecordBreedingModal from "@/components/breeding/RecordBreedingModal";
@@ -56,7 +56,7 @@ export default function BreedingClient({ records, animals, calvings }: BreedingC
         {/* Breeding records table */}
         <div className="xl:col-span-2">
           {sortedRecords.length === 0 ? (
-            <EmptyState icon={Baby} title="No breeding records" description="Record mating, pregnancy, or calving events" />
+            <EmptyState icon={HeartHandshake} title="No breeding records" description="Record mating, pregnancy, or calving events" />
           ) : (
             <div className="card">
               <h3 className="font-display text-lg font-semibold mb-4">Breeding Records</h3>
@@ -103,7 +103,7 @@ export default function BreedingClient({ records, animals, calvings }: BreedingC
             </div>
             {calvings.length === 0 ? (
               <div className="text-center py-8">
-                <Baby className="w-10 h-10 text-muted/40 mx-auto mb-3" />
+                <HeartHandshake className="w-10 h-10 text-muted/40 mx-auto mb-3" />
                 <p className="text-sm text-muted">No upcoming calvings</p>
                 <p className="text-xs text-muted/60 mt-1">Record breeding events to track expected calvings</p>
               </div>

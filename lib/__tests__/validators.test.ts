@@ -8,7 +8,6 @@ import { vaccinationSchema } from "../validators/vaccination";
 describe("animalSchema", () => {
   const validAnimal = {
     tag_number: "BW-KW-0001",
-    lits_tag: "LITS-1234",
     animal_type: "cattle",
     breed: "Tswana",
     gender: "female",
@@ -68,7 +67,6 @@ describe("animalSchema", () => {
   it("allows optional fields to be empty strings", () => {
     const result = animalSchema.safeParse({
       ...validAnimal,
-      lits_tag: "",
       date_of_birth: "",
       colour: "",
       location: "",

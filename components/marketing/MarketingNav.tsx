@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Sprout, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { CowIcon } from "@/components/ui/CowIcon";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -20,7 +21,7 @@ export default function MarketingNav() {
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-9 h-9 rounded-lg bg-gold flex items-center justify-center">
-            <Sprout className="w-5 h-5 text-white" />
+            <CowIcon className="w-5 h-5 text-white" size={20} />
           </div>
           <span className="font-display text-sm text-white leading-tight">
             LMHTS<br />

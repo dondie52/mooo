@@ -72,7 +72,7 @@ export default function VaccinationTrendChart({
               stroke="#c0392b"
               strokeDasharray="6 4"
               label={{
-                value: "BMC minimum (80%)",
+                value: "Minimum (80%)",
                 position: "insideTopRight",
                 fill: "#c0392b",
                 fontSize: 11,

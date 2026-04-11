@@ -7,16 +7,16 @@ import {
   Beef,
   HeartPulse,
   Syringe,
-  Baby,
+  HeartHandshake,
   FileText,
   Bell,
   Users,
   LogOut,
-  Sprout,
   Menu,
   X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { CowIcon } from "@/components/ui/CowIcon";
 import { cn, initials } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -41,7 +41,7 @@ const navGroups = [
       { name: "Animals", href: "/animals", icon: Beef },
       { name: "Health Events", href: "/health", icon: HeartPulse },
       { name: "Vaccinations", href: "/vaccinations", icon: Syringe },
-      { name: "Breeding", href: "/breeding", icon: Baby },
+      { name: "Breeding", href: "/breeding", icon: HeartHandshake },
     ],
   },
   {
@@ -135,7 +135,7 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
       <div className="p-5 pb-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-lg bg-gold flex items-center justify-center shrink-0">
-            <Sprout className="w-5 h-5 text-forest-deep" />
+            <CowIcon className="w-5 h-5 text-forest-deep" size={20} />
           </div>
           <div className="min-w-0">
             <div className="font-display text-lg font-semibold text-earth-cream leading-tight">

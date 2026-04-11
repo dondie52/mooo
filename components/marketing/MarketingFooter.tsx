@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Sprout, Mail, User, GraduationCap } from "lucide-react";
+import { Mail, User, GraduationCap } from "lucide-react";
+import { CowIcon } from "@/components/ui/CowIcon";
 
 export default function MarketingFooter() {
   return (
@@ -11,7 +12,7 @@ export default function MarketingFooter() {
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center">
-                <Sprout className="w-4 h-4 text-white" />
+                <CowIcon className="w-4 h-4 text-white" size={16} />
               </div>
               <span className="font-display text-[15px] text-white">
                 Livestock Management System

@@ -24,7 +24,7 @@ export default function BmcCoverageCard({
   const inner = (
     <>
       <div className="text-[11px] font-semibold uppercase tracking-wide text-muted mb-2">
-        BMC Vaccination Coverage
+        Vaccination Coverage
       </div>
       <div className="font-display text-4xl font-semibold text-forest-deep leading-none mb-3">
         {coveragePct}%
@@ -55,7 +55,7 @@ export default function BmcCoverageCard({
         >
           {compliant ? "Compliant" : "Below minimum"}
         </span>
-        <span className="text-[10px] text-muted">80% BMC threshold</span>
+        <span className="text-[10px] text-muted">80% threshold</span>
       </div>
     </>
   );

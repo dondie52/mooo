@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Trash2, HeartPulse, Syringe, Baby, Truck } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, HeartPulse, Syringe, HeartHandshake, Truck } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -82,7 +82,6 @@ export default function AnimalDetailClient({
               <h1 className="font-display text-2xl sm:text-3xl font-semibold">{animal.tag_number}</h1>
               <span className={cn("badge", statusBadge[animal.status] ?? "badge-muted")}>{animal.status}</span>
             </div>
-            {animal.lits_tag && <p className="text-sm text-muted">LITS: {animal.lits_tag}</p>}
           </div>
           <div className="flex gap-2">
             <Link href={`/animals/edit?id=${animal.animal_id}`} className="btn-secondary">
@@ -186,7 +185,7 @@ export default function AnimalDetailClient({
 
         {activeTab === "breeding" && (
           breedingRecords.length === 0 ? (
-            <EmptyState icon={Baby} title="No breeding records" description="Record breeding events to track this animal's reproductive history" />
+            <EmptyState icon={HeartHandshake} title="No breeding records" description="Record breeding events to track this animal's reproductive history" />
           ) : (
             <div className="card">
               <div className="overflow-x-auto -mx-6">
