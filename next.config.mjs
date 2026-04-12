@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 const nextConfig = {
   reactStrictMode: true,
   output: 'export',
-  // Subpath deploys: set NEXT_PUBLIC_BASE_PATH=/mooo (must match hosting path)
-  ...(process.env.NEXT_PUBLIC_BASE_PATH
-    ? { basePath: process.env.NEXT_PUBLIC_BASE_PATH }
-    : {}),
+  ...(basePath ? { basePath, assetPrefix: basePath } : {}),
   images: {
     unoptimized: true,
   },
