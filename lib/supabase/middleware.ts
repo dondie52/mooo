@@ -60,17 +60,27 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Admin route protection
-  if (user && pathname.startsWith("/admin")) {
+  // Role-based route protection
+  if (user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin") {
+    const role = profile?.role;
+
+    // Admin-only routes
+    if (pathname.startsWith("/admin") && role !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // Vet cannot create animals
+    if (pathname === "/animals/new" && role === "vet") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/animals";
       return NextResponse.redirect(url);
     }
   }

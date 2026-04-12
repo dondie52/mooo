@@ -34,13 +34,17 @@ export default function AdminUsersPage() {
         .select("*")
         .order("created_at", { ascending: false });
 
+      // Note: In static export mode we can't fetch auth.users emails server-side.
+      // We use the profile data and the current user's email for display.
+      // For a full implementation, an edge function would provide the email mapping.
       const mapped = (profiles ?? []).map((p: any) => ({
         id: p.id,
         full_name: p.full_name,
-        email: user.email ?? "—",
+        email: p.id === user.id ? (user.email ?? "—") : `${p.full_name?.toLowerCase().replace(/\s+/g, ".")}@lmhts`,
         role: p.role,
         district: p.district,
         farm_name: p.farm_name,
+        phone: p.phone,
         is_active: p.is_active,
         created_at: p.created_at,
       }));

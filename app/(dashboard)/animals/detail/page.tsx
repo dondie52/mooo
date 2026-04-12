@@ -10,6 +10,7 @@ export default function AnimalDetailPage() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [data, setData] = useState<any>(null);
+  const [role, setRole] = useState<"farmer" | "vet" | "admin">("farmer");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,6 +19,14 @@ export default function AnimalDetailPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role) setRole(profile.role as typeof role);
 
       const { data: animal } = await supabase
         .from("animals").select("*").eq("animal_id", id).single();
@@ -56,6 +65,7 @@ export default function AnimalDetailPage() {
       vaccinations={data.vaccinations}
       breedingRecords={data.breedingRecords}
       movements={data.movements}
+      role={role}
     />
   );
 }

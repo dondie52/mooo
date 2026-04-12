@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { animalSchema, type AnimalFormData } from "@/lib/validators/animal";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/ui/Toast";
 
 const CATTLE_BREEDS = ["Brahman", "Tswana", "Cross", "Angus", "Hereford", "Simmental", "Other"];
 const GOAT_BREEDS = ["Tswana", "Boer", "Kalahari Red", "Saanen", "Cross", "Other"];
@@ -32,11 +33,28 @@ const initial: AnimalFormData = {
 
 export default function NewAnimalPage() {
   const router = useRouter();
+  const toast = useToast();
   const [form, setForm] = useState<AnimalFormData>(initial);
   const [errors, setErrors] = useState<Partial<Record<keyof AnimalFormData, string>>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [breedSelection, setBreedSelection] = useState("");
+
+  // Route guard: vets cannot register animals
+  useEffect(() => {
+    const checkRole = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles").select("role").eq("id", user.id).single();
+      if (profile?.role === "vet") {
+        toast({ message: "Vets cannot register animals", variant: "error" });
+        router.push("/animals");
+      }
+    };
+    checkRole();
+  }, [router, toast]);
 
   function set<K extends keyof AnimalFormData>(key: K, value: AnimalFormData[K]) {
     setForm((f) => ({ ...f, [key]: value }));

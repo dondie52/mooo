@@ -45,6 +45,7 @@ interface AnimalDetailClientProps {
   vaccinations: Tables<"vaccinations">[];
   breedingRecords: Tables<"breeding_records">[];
   movements: Tables<"movements">[];
+  role?: "farmer" | "vet" | "admin";
 }
 
 export default function AnimalDetailClient({
@@ -53,6 +54,7 @@ export default function AnimalDetailClient({
   vaccinations,
   breedingRecords,
   movements,
+  role = "farmer",
 }: AnimalDetailClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("health");
@@ -84,15 +86,28 @@ export default function AnimalDetailClient({
             </div>
           </div>
           <div className="flex gap-2">
-            <Link href={`/animals/edit?id=${animal.animal_id}`} className="btn-secondary">
-              <Pencil className="w-4 h-4" /> Edit
-            </Link>
-            <button
-              onClick={handleDelete}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-red-200 text-alert-red text-sm font-medium hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" /> Delete
-            </button>
+            {role === "vet" ? (
+              <>
+                <Link href={`/health?animal=${animal.animal_id}`} className="btn-primary">
+                  <HeartPulse className="w-4 h-4" /> Log Health Event
+                </Link>
+                <Link href={`/vaccinations?animal=${animal.animal_id}`} className="btn-secondary">
+                  <Syringe className="w-4 h-4" /> Record Vaccination
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href={`/animals/edit?id=${animal.animal_id}`} className="btn-secondary">
+                  <Pencil className="w-4 h-4" /> Edit
+                </Link>
+                <button
+                  onClick={handleDelete}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-red-200 text-alert-red text-sm font-medium hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete
+                </button>
+              </>
+            )}
           </div>
         </div>
 

@@ -37,6 +37,11 @@ export default function AdminDashboard() {
           rpc("get_admin_vet_workload"),
         ]);
 
+        if (statsRes.error) console.error("get_admin_system_stats error:", statsRes.error);
+        if (farmsRes.error) console.error("get_admin_all_farms error:", farmsRes.error);
+        if (activityRes.error) console.error("get_admin_recent_activity error:", activityRes.error);
+        if (vetsRes.error) console.error("get_admin_vet_workload error:", vetsRes.error);
+
         const { data: statsData } = statsRes as { data: SystemStats[] | SystemStats | null };
         if (statsData && Array.isArray(statsData) && statsData.length > 0) {
           setStats(statsData[0]);

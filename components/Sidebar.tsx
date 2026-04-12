@@ -119,24 +119,6 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    // #region agent log
-    fetch("http://127.0.0.1:7707/ingest/653e5f50-ef6a-4b6a-a313-00ff60affc97", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "e8795a",
-      },
-      body: JSON.stringify({
-        sessionId: "e8795a",
-        runId: "pre-fix",
-        hypothesisId: "D",
-        location: "Sidebar.tsx:useEffect[pathname]",
-        message: "pathname effect",
-        data: { pathname, closingMobile: true },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     setMobileOpen(false);
   }, [pathname]);
 
@@ -206,30 +188,7 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => {
-                      // #region agent log
-                      fetch(
-                        "http://127.0.0.1:7707/ingest/653e5f50-ef6a-4b6a-a313-00ff60affc97",
-                        {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            "X-Debug-Session-Id": "e8795a",
-                          },
-                          body: JSON.stringify({
-                            sessionId: "e8795a",
-                            runId: "pre-fix",
-                            hypothesisId: "B",
-                            location: "Sidebar.tsx:nav Link.onClick",
-                            message: "nav link click handler ran",
-                            data: { href: item.href },
-                            timestamp: Date.now(),
-                          }),
-                        }
-                      ).catch(() => {});
-                      // #endregion
-                      setMobileOpen(false);
-                    }}
+                    onClick={() => setMobileOpen(false)}
                     className={cn(
                       "flex items-center gap-3 py-2 rounded-lg text-sm transition-colors",
                       active
@@ -300,30 +259,7 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
           "lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity duration-300",
           mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
-        onClick={() => {
-          // #region agent log
-          fetch(
-            "http://127.0.0.1:7707/ingest/653e5f50-ef6a-4b6a-a313-00ff60affc97",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-Debug-Session-Id": "e8795a",
-              },
-              body: JSON.stringify({
-                sessionId: "e8795a",
-                runId: "pre-fix",
-                hypothesisId: "A",
-                location: "Sidebar.tsx:overlay.onClick",
-                message: "overlay received click",
-                data: { mobileOpen },
-                timestamp: Date.now(),
-              }),
-            }
-          ).catch(() => {});
-          // #endregion
-          setMobileOpen(false);
-        }}
+        onClick={() => setMobileOpen(false)}
       />
 
       {/* Mobile drawer */}
@@ -332,32 +268,6 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
           "lg:hidden fixed inset-y-0 left-0 z-50 w-[260px] bg-forest-deep transition-transform duration-300 ease-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        onPointerDownCapture={(e) => {
-          // #region agent log
-          fetch(
-            "http://127.0.0.1:7707/ingest/653e5f50-ef6a-4b6a-a313-00ff60affc97",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-Debug-Session-Id": "e8795a",
-              },
-              body: JSON.stringify({
-                sessionId: "e8795a",
-                runId: "pre-fix",
-                hypothesisId: "E",
-                location: "Sidebar.tsx:mobile-aside.onPointerDownCapture",
-                message: "pointer down on mobile drawer",
-                data: {
-                  targetTag: (e.target as HTMLElement)?.tagName,
-                  mobileOpen,
-                },
-                timestamp: Date.now(),
-              }),
-            }
-          ).catch(() => {});
-          // #endregion
-        }}
       >
         <button
           onClick={() => setMobileOpen(false)}

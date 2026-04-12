@@ -22,3 +22,5 @@ next-env.d.ts
 __pycache__/
 *.pyc
 tsconfig.tsbuildinfo
+
+.playwright-mcp/

@@ -10,6 +10,7 @@ export default function BreedingPage() {
   const [records, setRecords] = useState<any[]>([]);
   const [animals, setAnimals] = useState<any[]>([]);
   const [calvings, setCalvings] = useState<any[]>([]);
+  const [role, setRole] = useState<"farmer" | "vet" | "admin">("farmer");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,6 +18,14 @@ export default function BreedingPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role) setRole(profile.role as typeof role);
 
       const [{ data: rec }, { data: an }, { data: calv }] = await Promise.all([
         supabase.from("breeding_records").select("*, animals(tag_number, breed)").order("event_date", { ascending: false }),
@@ -34,5 +43,5 @@ export default function BreedingPage() {
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-2 border-forest-mid border-t-transparent rounded-full" /></div>;
 
-  return <BreedingClient records={records} animals={animals} calvings={calvings} />;
+  return <BreedingClient records={records} animals={animals} calvings={calvings} role={role} />;
 }

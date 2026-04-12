@@ -27,9 +27,10 @@ const statusBadge: Record<string, string> = {
 
 interface AnimalsClientProps {
   animals: Tables<"animals">[];
+  role?: "farmer" | "vet" | "admin";
 }
 
-export default function AnimalsClient({ animals }: AnimalsClientProps) {
+export default function AnimalsClient({ animals, role = "farmer" }: AnimalsClientProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -56,8 +57,8 @@ export default function AnimalsClient({ animals }: AnimalsClientProps) {
     <div className="space-y-6">
       <PageHeader
         title="Animals"
-        description="Manage your herd"
-        action={{ label: "Register Animal", href: "/animals/new", icon: Plus }}
+        description={role === "admin" ? "System-wide animal records" : role === "vet" ? "Animals from your assigned farmers" : "Manage your herd"}
+        action={role === "farmer" ? { label: "Register Animal", href: "/animals/new", icon: Plus } : undefined}
       />
 
       {/* Stats bar */}
@@ -88,7 +89,7 @@ export default function AnimalsClient({ animals }: AnimalsClientProps) {
           icon={Beef}
           title="No animals found"
           description={search || status ? "Try adjusting your filters" : "Register your first animal to get started"}
-          action={!search && !status ? { label: "Register Animal", href: "/animals/new" } : undefined}
+          action={!search && !status && role === "farmer" ? { label: "Register Animal", href: "/animals/new" } : undefined}
         />
       ) : (
         <div className="card">

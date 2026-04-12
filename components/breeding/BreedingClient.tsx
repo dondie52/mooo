@@ -20,6 +20,7 @@ interface BreedingClientProps {
   records: BreedingWithAnimal[];
   animals: AnimalPick[];
   calvings: Array<{ animal_id: string; tag_number: string; expected_date: string }>;
+  role?: "farmer" | "vet" | "admin";
 }
 
 const breedingBadge: Record<string, string> = {
@@ -31,7 +32,7 @@ const breedingBadge: Record<string, string> = {
   weaning: "badge-muted",
 };
 
-export default function BreedingClient({ records, animals, calvings }: BreedingClientProps) {
+export default function BreedingClient({ records, animals, calvings, role = "farmer" }: BreedingClientProps) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -47,9 +48,11 @@ export default function BreedingClient({ records, animals, calvings }: BreedingC
           <h1 className="font-display text-2xl sm:text-3xl font-semibold">Breeding</h1>
           <p className="text-sm text-muted mt-1">Breeding records and expected calvings</p>
         </div>
-        <button onClick={() => setModalOpen(true)} className="btn-primary shrink-0">
-          <Plus className="w-4 h-4" /> Record Event
-        </button>
+        {role !== "vet" && (
+          <button onClick={() => setModalOpen(true)} className="btn-primary shrink-0">
+            <Plus className="w-4 h-4" /> Record Event
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">

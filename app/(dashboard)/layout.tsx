@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Sidebar from "@/components/Sidebar";
+import Topbar from "@/components/layout/Topbar";
 import { ToastProvider } from "@/components/ui/Toast";
 
 export default function DashboardLayout({
@@ -36,6 +37,13 @@ export default function DashboardLayout({
         .eq("user_id", user.id)
         .eq("is_read", false);
 
+      // Update last_login timestamp
+      supabase
+        .from("profiles")
+        .update({ last_login: new Date().toISOString() })
+        .eq("id", user.id)
+        .then();
+
       setProfile(prof);
       setUnreadAlerts(count ?? 0);
       setLoading(false);
@@ -63,7 +71,8 @@ export default function DashboardLayout({
 
         <Sidebar profile={profile} unreadAlerts={unreadAlerts} />
         <main id="main-content" className="lg:ml-[240px] min-h-screen">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-6 lg:pt-8 lg:pb-8">
+          <Topbar profile={profile} unreadCount={unreadAlerts} />
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-6 lg:pt-8 lg:pb-8">
             {children}
           </div>
         </main>
