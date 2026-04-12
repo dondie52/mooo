@@ -70,7 +70,10 @@ export default function DashboardLayout({
         </a>
 
         <Sidebar profile={profile} unreadAlerts={unreadAlerts} />
-        <main id="main-content" className="lg:ml-[240px] min-h-screen">
+        <main
+          id="main-content"
+          className="min-h-screen relative z-10 lg:pl-[240px]"
+        >
           <Topbar profile={profile} unreadCount={unreadAlerts} />
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-6 lg:pt-8 lg:pb-8">
             {children}
