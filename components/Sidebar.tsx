@@ -280,7 +280,7 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[240px] bg-forest-deep shrink-0 fixed inset-y-0 left-0">
+      <aside className="hidden lg:block w-[240px] bg-forest-deep shrink-0 fixed inset-y-0 left-0 z-20">
         {sidebarContent}
       </aside>
     </>

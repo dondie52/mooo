@@ -23,11 +23,13 @@ export default function AdminDashboard() {
   const [farms, setFarms] = useState<FarmRow[]>([]);
   const [activities, setActivities] = useState<ActivityRow[]>([]);
   const [vets, setVets] = useState<VetWorkloadRow[]>([]);
+  const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
     const load = async () => {
       try {
         const supabase = createClient();
+        const rpcErrors: string[] = [];
 
         const rpc = supabase.rpc as any;
         const [statsRes, farmsRes, activityRes, vetsRes] = await Promise.all([
@@ -37,10 +39,24 @@ export default function AdminDashboard() {
           rpc("get_admin_vet_workload"),
         ]);
 
-        if (statsRes.error) console.error("get_admin_system_stats error:", statsRes.error);
-        if (farmsRes.error) console.error("get_admin_all_farms error:", farmsRes.error);
-        if (activityRes.error) console.error("get_admin_recent_activity error:", activityRes.error);
-        if (vetsRes.error) console.error("get_admin_vet_workload error:", vetsRes.error);
+        if (statsRes.error) {
+          console.error("get_admin_system_stats error:", statsRes.error);
+          rpcErrors.push(`System stats: ${statsRes.error.message}`);
+        }
+        if (farmsRes.error) {
+          console.error("get_admin_all_farms error:", farmsRes.error);
+          rpcErrors.push(`Farms data: ${farmsRes.error.message}`);
+        }
+        if (activityRes.error) {
+          console.error("get_admin_recent_activity error:", activityRes.error);
+          rpcErrors.push(`Activity feed: ${activityRes.error.message}`);
+        }
+        if (vetsRes.error) {
+          console.error("get_admin_vet_workload error:", vetsRes.error);
+          rpcErrors.push(`Vet workload: ${vetsRes.error.message}`);
+        }
+
+        if (rpcErrors.length > 0) setErrors(rpcErrors);
 
         const { data: statsData } = statsRes as { data: SystemStats[] | SystemStats | null };
         if (statsData && Array.isArray(statsData) && statsData.length > 0) {
@@ -57,6 +73,7 @@ export default function AdminDashboard() {
         setVets(vetsData || []);
       } catch (err) {
         console.error("Admin dashboard load error:", err);
+        setErrors(["Failed to load dashboard data. Check the browser console for details."]);
       } finally {
         setLoading(false);
       }
@@ -95,6 +112,20 @@ export default function AdminDashboard() {
           Admin dashboard — monitoring all farms, users, and compliance
         </p>
       </div>
+
+      {/* RPC error banner */}
+      {errors.length > 0 && (
+        <div className="rounded-lg border border-alert-red/30 bg-red-50 p-4">
+          <p className="text-sm font-semibold text-alert-red mb-1">
+            Some dashboard data failed to load
+          </p>
+          <ul className="text-xs text-alert-red/80 space-y-0.5 list-disc list-inside">
+            {errors.map((e, i) => (
+              <li key={i}>{e}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Row 1 — KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
