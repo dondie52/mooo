@@ -31,12 +31,11 @@ export default function AdminDashboard() {
         const supabase = createClient();
         const rpcErrors: string[] = [];
 
-        const rpc = supabase.rpc as any;
         const [statsRes, farmsRes, activityRes, vetsRes] = await Promise.all([
-          rpc("get_admin_system_stats"),
-          rpc("get_admin_all_farms"),
-          rpc("get_admin_recent_activity", { lim: 15 }),
-          rpc("get_admin_vet_workload"),
+          supabase.rpc("get_admin_system_stats"),
+          supabase.rpc("get_admin_all_farms"),
+          supabase.rpc("get_admin_recent_activity", { lim: 15 }),
+          supabase.rpc("get_admin_vet_workload"),
         ]);
 
         if (statsRes.error) {
