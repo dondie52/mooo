@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Printer, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, formatDate, vaccinationStatus } from "@/lib/utils";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -101,16 +101,12 @@ export default function CertificatePage() {
       {/* Certificate document */}
       <div className="certificate bg-white rounded-xl shadow-card overflow-hidden print-colors">
         {/* Header band */}
-        <div className="bg-forest-mid px-8 py-6 flex items-center justify-between print-colors">
+        <div className="bg-forest-mid px-8 py-6 print-colors">
           <div>
             <h1 className="font-display text-xl font-semibold text-white">LMHTS</h1>
             <p className="text-white/70 text-xs mt-0.5">
               Botswana Livestock Management System &middot; BAITS-Aligned Compliance Document
             </p>
-          </div>
-          <div className="flex items-center gap-2 bg-white/15 rounded-lg px-3 py-1.5">
-            <BadgeCheck className="w-5 h-5 text-alert-green" />
-            <span className="text-xs font-semibold text-white uppercase tracking-wide">BMC Approved</span>
           </div>
         </div>
 
@@ -131,7 +127,6 @@ export default function CertificatePage() {
             <ProfileField label="Owner / Farmer" value={owner.full_name} />
             <ProfileField label="Farm Location" value={[owner.farm_name, owner.district].filter(Boolean).join(", ") || "Not specified"} />
             <ProfileField label="Primary Location" value={animal.location || "Not specified"} />
-            <ProfileField label="LITS Tag" value={animal.lits_tag || "Not assigned"} />
           </div>
         </div>
 
@@ -233,8 +228,7 @@ export default function CertificatePage() {
             <span>Generated on {generatedDate} &middot; Document reference: {docRef}</span>
           </div>
           <p className="text-[9px] text-muted/70 mt-2 leading-relaxed">
-            This certificate is generated from farmer-maintained records in the LMHTS system.
-            Records align with BAITS requirements but are not a substitute for BAITS hardware verification.
+            This certificate is generated from farmer-maintained records in the LMHTS system. The format is aligned with BAITS documentation requirements and is intended to support BMC submission, but this document is not itself BMC-approved or independently verified. For official traceability, records should be cross-referenced with BAITS registration data held by the Department of Veterinary Services.
           </p>
         </div>
       </div>
