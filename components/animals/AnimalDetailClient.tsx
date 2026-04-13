@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Trash2, HeartPulse, Syringe, HeartHandshake, Truck } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, HeartPulse, Syringe, HeartHandshake, Truck, FileText } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -108,6 +108,9 @@ export default function AnimalDetailClient({
                 </button>
               </>
             )}
+            <Link href={`/reports/certificate?id=${animal.animal_id}`} className="btn-gold">
+              <FileText className="w-4 h-4" /> Generate Certificate
+            </Link>
           </div>
         </div>
 
