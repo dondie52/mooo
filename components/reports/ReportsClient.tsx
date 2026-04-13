@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Syringe, MapPin, HeartPulse, Beef, Download, Printer } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Syringe, MapPin, HeartPulse, Beef, Download, Printer, FileText } from "lucide-react";
 import { downloadCsv } from "@/lib/utils/csv";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { LucideIcon } from "lucide-react";
@@ -116,6 +117,8 @@ function printReport(title: string, headers: string[], rows: Record<string, stri
 }
 
 export default function ReportsClient({ animals, vaccinations, healthEvents, movements }: ReportsClientProps) {
+  const router = useRouter();
+  const [selectedAnimalId, setSelectedAnimalId] = useState("");
   const [dateRanges, setDateRanges] = useState<Record<string, { from: string; to: string }>>({
     vaccination: { from: "", to: "" },
     traceability: { from: "", to: "" },
@@ -385,6 +388,51 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
             </div>
           );
         })}
+
+        {/* Vaccination Certificate card */}
+        <div className="card card-hover">
+          <div className="accent-bar w-12 mb-4" />
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5 text-gold-dark" />
+            </div>
+            <div>
+              <h3 className="font-display text-lg font-semibold">Vaccination Certificate</h3>
+              <p className="text-xs text-muted mt-0.5">
+                Per-animal printable certificate with vaccination &amp; movement history for BMC/BAITS compliance
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-5">
+            <label className="label">Select animal</label>
+            <select
+              className="input"
+              value={selectedAnimalId}
+              onChange={(e) => setSelectedAnimalId(e.target.value)}
+            >
+              <option value="">Choose an animal...</option>
+              {animals
+                .filter((a) => a.status === "active")
+                .sort((a, b) => a.tag_number.localeCompare(b.tag_number))
+                .map((a) => (
+                  <option key={a.animal_id} value={a.animal_id}>
+                    {a.tag_number} — {a.breed} ({a.gender})
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <button
+            onClick={() => {
+              if (selectedAnimalId) router.push(`/reports/certificate?id=${selectedAnimalId}`);
+            }}
+            disabled={!selectedAnimalId}
+            className="btn-gold w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FileText className="w-4 h-4" /> Generate Certificate
+          </button>
+        </div>
       </div>
     </div>
   );
