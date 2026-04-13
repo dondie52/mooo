@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { CowIcon } from "@/components/ui/CowIcon";
+import { Cow } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
@@ -66,7 +66,7 @@ export default function RegisterPage() {
         <div className="card animate-fade-up">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-11 h-11 rounded-lg bg-forest-mid flex items-center justify-center">
-              <CowIcon className="w-6 h-6 text-gold" size={24} />
+              <Cow size={24} weight="fill" className="text-gold" />
             </div>
             <div>
               <h1 className="font-display text-2xl font-semibold">Create your account</h1>

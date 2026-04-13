@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/layout/Topbar";
@@ -13,6 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [profile, setProfile] = useState<any>(null);
   const [unreadAlerts, setUnreadAlerts] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ export default function DashboardLayout({
       setLoading(false);
     };
     load();
-  }, [router]);
+  }, [router, pathname]);
 
   if (loading) {
     return (

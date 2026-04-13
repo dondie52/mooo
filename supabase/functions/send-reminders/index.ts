@@ -32,6 +32,33 @@ Deno.serve(async (req: Request) => {
   const today = new Date().toISOString().split("T")[0];
   const errors: string[] = [];
   const counts = { rule1: 0, rule2: 0, rule3: 0, rule4: 0 };
+  let vetNotifications = 0;
+
+  // ── Load system settings (with fallbacks) ─────────────────────────
+  let bmcThreshold = 80;
+  let reminderDays = 7;
+  let overdueEscalationDays = 15;
+  let emailEnabled = true;
+  let senderName = "LMHTS";
+
+  try {
+    const { data: s1 } = await supabase.rpc("get_system_setting", { p_key: "bmc_threshold" });
+    if (s1 != null) bmcThreshold = typeof s1 === "number" ? s1 : Number(s1) || 80;
+
+    const { data: s2 } = await supabase.rpc("get_system_setting", { p_key: "reminder_days" });
+    if (s2 != null) reminderDays = typeof s2 === "number" ? s2 : Number(s2) || 7;
+
+    const { data: s3 } = await supabase.rpc("get_system_setting", { p_key: "overdue_escalation_days" });
+    if (s3 != null) overdueEscalationDays = typeof s3 === "number" ? s3 : Number(s3) || 15;
+
+    const { data: s4 } = await supabase.rpc("get_system_setting", { p_key: "email_enabled" });
+    if (s4 != null) emailEnabled = s4 === true || s4 === "true";
+
+    const { data: s5 } = await supabase.rpc("get_system_setting", { p_key: "sender_name" });
+    if (s5 != null && typeof s5 === "string" && s5.length > 0) senderName = s5;
+  } catch (_) {
+    // Settings table may not exist yet; use defaults
+  }
 
   // ── Fetch user emails from auth.users ───────────────────────────────
   const emailMap = new Map<string, string>();
@@ -59,7 +86,7 @@ Deno.serve(async (req: Request) => {
     subject: string,
     body: string
   ): Promise<boolean> {
-    if (!brevoApiKey || !toEmail) return false;
+    if (!emailEnabled || !brevoApiKey || !toEmail) return false;
     try {
       const res = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
@@ -69,7 +96,7 @@ Deno.serve(async (req: Request) => {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          sender: { name: "LMHTS", email: "noreply@lmhts.bw" },
+          sender: { name: senderName, email: "noreply@lmhts.bw" },
           to: [{ email: toEmail, name: toName }],
           subject,
           htmlContent: emailTemplate(toName, subject, body),
@@ -149,13 +176,70 @@ Deno.serve(async (req: Request) => {
     return (count ?? 0) > 0;
   }
 
+  // ── Cache: vet assignments per farmer ───────────────────────────────
+  const vetCache = new Map<string, Array<{ vet_id: string }>>();
+
+  async function getAssignedVets(farmerId: string): Promise<Array<{ vet_id: string }>> {
+    if (vetCache.has(farmerId)) return vetCache.get(farmerId)!;
+    const { data } = await supabase
+      .from("vet_assignments")
+      .select("vet_id")
+      .eq("farmer_id", farmerId)
+      .eq("is_active", true);
+    const vets = data ?? [];
+    vetCache.set(farmerId, vets);
+    return vets;
+  }
+
+  // ── Helper: notify assigned vets ──────────────────────────────────
+  async function notifyAssignedVets(
+    farmerId: string,
+    animalId: string | null,
+    alertType: string,
+    severity: string,
+    alertTitle: string,
+    alertMessage: string,
+    emailSubject: string,
+    emailBody: string
+  ) {
+    const vets = await getAssignedVets(farmerId);
+    const farmerName = nameMap.get(farmerId) ?? "Farmer";
+
+    for (const { vet_id } of vets) {
+      // Dedup: skip if vet already alerted today for this type+animal
+      if (await alertExistsToday(vet_id, alertType, animalId)) continue;
+
+      const vetEmail = emailMap.get(vet_id);
+      const vetName = nameMap.get(vet_id) ?? "Vet";
+
+      const vetBody = `<p style="color:#6b7564;font-size:13px;margin:0 0 12px;border-left:3px solid #c8861a;padding-left:10px">
+        Regarding your assigned farmer <strong>${farmerName}</strong></p>${emailBody}`;
+
+      const sent = vetEmail
+        ? await sendEmail(vetEmail, vetName, `[LMHTS Vet Alert] ${emailSubject}`, vetBody)
+        : false;
+
+      await insertAlert(
+        vet_id,
+        animalId,
+        alertType,
+        severity,
+        alertTitle,
+        `[${farmerName}] ${alertMessage}`,
+        sent
+      );
+
+      vetNotifications++;
+    }
+  }
+
   // ════════════════════════════════════════════════════════════════════
   // RULE 1: 7-day advance vaccination reminder
   // ════════════════════════════════════════════════════════════════════
   try {
-    const sevenDays = new Date();
-    sevenDays.setDate(sevenDays.getDate() + 7);
-    const sevenDaysStr = sevenDays.toISOString().split("T")[0];
+    const reminderWindow = new Date();
+    reminderWindow.setDate(reminderWindow.getDate() + reminderDays);
+    const sevenDaysStr = reminderWindow.toISOString().split("T")[0];
 
     const { data: dueVaccs } = await supabase
       .from("vaccinations")
@@ -190,6 +274,19 @@ Deno.serve(async (req: Request) => {
         sent
       );
 
+      // Notify assigned vets
+      await notifyAssignedVets(
+        animal.owner_id,
+        v.animal_id,
+        "vaccination_due",
+        "info",
+        `${v.vaccine_name} due for ${animal.tag_number}`,
+        `Vaccination due on ${v.next_due_date}. Schedule now to stay compliant.`,
+        `Vaccination Due: ${v.vaccine_name} for ${animal.tag_number}`,
+        `<p>The <strong>${v.vaccine_name}</strong> vaccination for animal <strong>${animal.tag_number}</strong> is due on <strong>${v.next_due_date}</strong>.</p>
+         <p>Please follow up with the farmer to ensure BMC compliance.</p>`
+      );
+
       // Mark reminder as sent to prevent duplicates
       await supabase
         .from("vaccinations")
@@ -222,7 +319,7 @@ Deno.serve(async (req: Request) => {
       const daysOverdue = Math.floor(
         (new Date(today).getTime() - new Date(v.next_due_date!).getTime()) / 86400000
       );
-      const severity = daysOverdue >= 15 ? "critical" : "warning";
+      const severity = daysOverdue >= overdueEscalationDays ? "critical" : "warning";
 
       const email = emailMap.get(animal.owner_id);
       const name = nameMap.get(animal.owner_id) ?? "Farmer";
@@ -245,6 +342,19 @@ Deno.serve(async (req: Request) => {
         `${v.vaccine_name} overdue for ${animal.tag_number}`,
         `${daysOverdue} days overdue. Was due ${v.next_due_date}. Vaccinate immediately.`,
         sent
+      );
+
+      // Notify assigned vets
+      await notifyAssignedVets(
+        animal.owner_id,
+        v.animal_id,
+        "vaccination_overdue",
+        severity,
+        `${v.vaccine_name} overdue for ${animal.tag_number}`,
+        `${daysOverdue} days overdue. Was due ${v.next_due_date}. Vaccinate immediately.`,
+        `OVERDUE: ${v.vaccine_name} for ${animal.tag_number} (${daysOverdue} days)`,
+        `<p>The <strong>${v.vaccine_name}</strong> vaccination for <strong>${animal.tag_number}</strong> was due on <strong>${v.next_due_date}</strong> and is now <strong>${daysOverdue} days overdue</strong>.</p>
+         <p style="color:#c0392b;font-weight:600">BMC compliance may be affected. Please follow up with the farmer.</p>`
       );
 
       counts.rule2++;
@@ -284,7 +394,7 @@ Deno.serve(async (req: Request) => {
     for (const [ownerId, stats] of farmerStats) {
       if (stats.total === 0) continue;
       const coverage = Math.round((stats.covered / stats.total) * 100);
-      if (coverage >= 80) continue;
+      if (coverage >= bmcThreshold) continue;
 
       // Dedup: one alert per farmer per day
       if (await alertExistsToday(ownerId, "disease_risk", null)) continue;
@@ -297,7 +407,7 @@ Deno.serve(async (req: Request) => {
             email,
             name,
             `BMC Warning: Vaccination coverage at ${coverage}%`,
-            `<p>Your herd vaccination coverage is currently <strong>${coverage}%</strong>, which is below the <strong>80% BMC minimum</strong>.</p>
+            `<p>Your herd vaccination coverage is currently <strong>${coverage}%</strong>, which is below the <strong>${bmcThreshold}% BMC minimum</strong>.</p>
              <p>${stats.total - stats.covered} of ${stats.total} active animals have overdue or missing vaccinations.</p>
              <p style="color:#c0392b;font-weight:600">Please update your vaccination records to maintain compliance.</p>`
           )
@@ -308,9 +418,23 @@ Deno.serve(async (req: Request) => {
         null,
         "disease_risk",
         "warning",
-        `Vaccination coverage at ${coverage}% (below 80% BMC minimum)`,
+        `Vaccination coverage at ${coverage}% (below ${bmcThreshold}% BMC minimum)`,
         `${stats.covered}/${stats.total} animals covered. ${stats.total - stats.covered} need attention.`,
         sent
+      );
+
+      // Notify assigned vets
+      await notifyAssignedVets(
+        ownerId,
+        null,
+        "disease_risk",
+        "warning",
+        `Vaccination coverage at ${coverage}% (below ${bmcThreshold}% BMC minimum)`,
+        `${stats.covered}/${stats.total} animals covered. ${stats.total - stats.covered} need attention.`,
+        `BMC Warning: ${name} at ${coverage}% coverage`,
+        `<p>Herd vaccination coverage is currently <strong>${coverage}%</strong>, below the <strong>${bmcThreshold}% BMC minimum</strong>.</p>
+         <p>${stats.total - stats.covered} of ${stats.total} active animals have overdue or missing vaccinations.</p>
+         <p>Please coordinate with the farmer to improve compliance.</p>`
       );
 
       counts.rule3++;
@@ -391,6 +515,19 @@ Deno.serve(async (req: Request) => {
         sent
       );
 
+      // Notify assigned vets
+      await notifyAssignedVets(
+        animal.owner_id,
+        b.animal_id,
+        "health_event",
+        "info",
+        `Expected calving: ${animal.tag_number} (~${daysUntil} days)`,
+        `Estimated calving date: ${expectedStr}. Prepare facilities and monitor.`,
+        `Calving Expected: ${animal.tag_number} in ~${daysUntil} days`,
+        `<p>Animal <strong>${animal.tag_number}</strong> is expected to calve around <strong>${expectedStr}</strong> (~${daysUntil} days from now).</p>
+         <p>Please ensure the farmer has veterinary support available.</p>`
+      );
+
       counts.rule4++;
     }
   } catch (err) {
@@ -401,6 +538,7 @@ Deno.serve(async (req: Request) => {
   const summary = {
     timestamp: new Date().toISOString(),
     reminders_sent: counts,
+    vet_notifications: vetNotifications,
     total: counts.rule1 + counts.rule2 + counts.rule3 + counts.rule4,
     errors,
   };

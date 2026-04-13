@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Mail, User, GraduationCap } from "lucide-react";
-import { CowIcon } from "@/components/ui/CowIcon";
+import { Cow } from "@phosphor-icons/react/dist/ssr";
 
 export default function MarketingFooter() {
   return (
@@ -12,7 +12,7 @@ export default function MarketingFooter() {
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center">
-                <CowIcon className="w-4 h-4 text-white" size={16} />
+                <Cow size={16} weight="fill" className="text-white" />
               </div>
               <span className="font-display text-[15px] text-white">
                 Livestock Management System

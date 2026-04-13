@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { CowIcon } from "@/components/ui/CowIcon";
+import { Cow } from "@phosphor-icons/react/dist/ssr";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -21,7 +21,7 @@ export default function MarketingNav() {
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-9 h-9 rounded-lg bg-gold flex items-center justify-center">
-            <CowIcon className="w-5 h-5 text-white" size={20} />
+            <Cow size={20} weight="fill" className="text-white" />
           </div>
           <span className="font-display text-sm text-white leading-tight">
             LMHTS<br />
