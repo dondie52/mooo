@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.4"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -596,6 +591,60 @@ export type Database = {
           condition_name: string
           count: number
         }[]
+      }
+      get_admin_system_stats: {
+        Args: never
+        Returns: {
+          total_users: number
+          total_farmers: number
+          total_vets: number
+          total_animals: number
+          avg_coverage_pct: number
+          active_alerts_7d: number
+        }[]
+      }
+      get_admin_all_farms: {
+        Args: never
+        Returns: {
+          farmer_id: string
+          full_name: string
+          farm_name: string | null
+          district: string | null
+          animal_count: number
+          coverage_pct: number
+          overdue_count: number
+          assigned_vet_name: string | null
+          is_active: boolean
+        }[]
+      }
+      get_admin_vet_workload: {
+        Args: never
+        Returns: {
+          vet_id: string
+          full_name: string
+          farmer_count: number
+          animal_count: number
+        }[]
+      }
+      get_admin_recent_activity: {
+        Args: { lim?: number }
+        Returns: {
+          log_id: string
+          user_name: string | null
+          action: string
+          table_name: string | null
+          created_at: string
+        }[]
+      }
+      log_audit_entry: {
+        Args: {
+          p_action: string
+          p_table_name: string | null
+          p_record_id: string | null
+          p_old_data: Json | null
+          p_new_data: Json | null
+        }
+        Returns: undefined
       }
     }
     Enums: {

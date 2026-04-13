@@ -20,7 +20,7 @@ import {
   Settings,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Cow } from "@phosphor-icons/react/dist/ssr";
+import { Cow } from "@phosphor-icons/react";
 import { cn, initials } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";

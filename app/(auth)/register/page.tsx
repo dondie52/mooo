@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Cow } from "@phosphor-icons/react/dist/ssr";
+import { Cow } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {

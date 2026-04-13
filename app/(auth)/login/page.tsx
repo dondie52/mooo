@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, ArrowRight } from "lucide-react";
-import { Cow } from "@phosphor-icons/react/dist/ssr";
+import { Cow } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 
 const devPreviewAuth = process.env.NEXT_PUBLIC_DEV_PREVIEW_AUTH === "true";

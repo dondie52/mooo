@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { Cow } from "@phosphor-icons/react/dist/ssr";
+import { Cow } from "@phosphor-icons/react";
 
 const navLinks = [
   { label: "Features", href: "#features" },

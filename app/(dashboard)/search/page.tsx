@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, Beef, HeartPulse, Syringe, Users } from "lucide-react";
+import { Search, Beef, HeartPulse, Syringe, Users, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const MAX_PER_GROUP = 5;
@@ -46,6 +46,7 @@ function SearchContent() {
   const [vaccinations, setVaccinations] = useState<VaccResult[]>([]);
   const [profiles, setProfiles] = useState<ProfileResult[]>([]);
   const [role, setRole] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!query) {
@@ -53,70 +54,92 @@ function SearchContent() {
       setHealthEvents([]);
       setVaccinations([]);
       setProfiles([]);
+      setError(null);
       return;
     }
 
     const fetchResults = async () => {
       setLoading(true);
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+      setError(null);
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          setError("You must be logged in to search.");
+          return;
+        }
 
-      // Get role
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-      const userRole = prof?.role ?? "farmer";
-      setRole(userRole);
-
-      const pattern = `%${query}%`;
-
-      const [animalsRes, healthRes, vaccRes] = await Promise.all([
-        supabase
-          .from("animals")
-          .select("animal_id, tag_number, breed, location, status")
-          .or(
-            `tag_number.ilike.${pattern},breed.ilike.${pattern},location.ilike.${pattern}`
-          )
-          .limit(MAX_PER_GROUP + 1),
-        supabase
-          .from("health_events")
-          .select(
-            "event_id, condition_name, event_type, event_date, animals!inner(tag_number, animal_id)"
-          )
-          .ilike("condition_name", pattern)
-          .limit(MAX_PER_GROUP + 1),
-        supabase
-          .from("vaccinations")
-          .select(
-            "vacc_id, vaccine_name, date_given, animals!inner(tag_number, animal_id)"
-          )
-          .ilike("vaccine_name", pattern)
-          .limit(MAX_PER_GROUP + 1),
-      ]);
-
-      setAnimals((animalsRes.data as AnimalResult[]) ?? []);
-      setHealthEvents((healthRes.data as HealthResult[]) ?? []);
-      setVaccinations((vaccRes.data as VaccResult[]) ?? []);
-
-      // Admin-only: search profiles
-      if (userRole === "admin") {
-        const profilesRes = await supabase
+        // Get role
+        const { data: prof } = await supabase
           .from("profiles")
-          .select("id, full_name, role, farm_name, district")
-          .or(`full_name.ilike.${pattern},district.ilike.${pattern}`)
-          .limit(MAX_PER_GROUP + 1);
-        setProfiles((profilesRes.data as ProfileResult[]) ?? []);
-      } else {
-        setProfiles([]);
-      }
+          .select("role")
+          .eq("id", user.id)
+          .single();
 
-      setLoading(false);
+        const userRole = prof?.role ?? "farmer";
+        setRole(userRole);
+
+        // Sanitize query for PostgREST .or() filter syntax safety
+        const sanitized = query.replace(/[,()]/g, " ").trim();
+        if (!sanitized) return;
+        const pattern = `%${sanitized}%`;
+
+        const [animalsRes, healthRes, vaccRes] = await Promise.all([
+          supabase
+            .from("animals")
+            .select("animal_id, tag_number, breed, location, status")
+            .or(
+              `tag_number.ilike.${pattern},breed.ilike.${pattern},location.ilike.${pattern}`
+            )
+            .limit(MAX_PER_GROUP + 1),
+          supabase
+            .from("health_events")
+            .select(
+              "event_id, condition_name, event_type, event_date, animals!inner(tag_number, animal_id)"
+            )
+            .ilike("condition_name", pattern)
+            .limit(MAX_PER_GROUP + 1),
+          supabase
+            .from("vaccinations")
+            .select(
+              "vacc_id, vaccine_name, date_given, animals!inner(tag_number, animal_id)"
+            )
+            .ilike("vaccine_name", pattern)
+            .limit(MAX_PER_GROUP + 1),
+        ]);
+
+        const queryError = animalsRes.error || healthRes.error || vaccRes.error;
+        if (queryError) {
+          console.error("Search query error:", queryError);
+          setError("Search failed. Please try a simpler search term.");
+          return;
+        }
+
+        setAnimals((animalsRes.data as AnimalResult[]) ?? []);
+        setHealthEvents((healthRes.data as HealthResult[]) ?? []);
+        setVaccinations((vaccRes.data as VaccResult[]) ?? []);
+
+        // Admin-only: search profiles
+        if (userRole === "admin") {
+          const profilesRes = await supabase
+            .from("profiles")
+            .select("id, full_name, role, farm_name, district")
+            .or(`full_name.ilike.${pattern},district.ilike.${pattern}`)
+            .limit(MAX_PER_GROUP + 1);
+          if (!profilesRes.error) {
+            setProfiles((profilesRes.data as ProfileResult[]) ?? []);
+          }
+        } else {
+          setProfiles([]);
+        }
+      } catch (err) {
+        console.error("Search error:", err);
+        setError("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchResults();
@@ -140,6 +163,18 @@ function SearchContent() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin h-8 w-8 border-3 border-forest-mid border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="h-12 w-12 text-alert-red/40 mb-4" />
+        <h1 className="text-xl font-semibold text-forest-deep font-display">
+          Search error
+        </h1>
+        <p className="text-sm text-muted mt-1">{error}</p>
       </div>
     );
   }
