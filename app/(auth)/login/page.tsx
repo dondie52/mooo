@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, ArrowRight } from "lucide-react";
-import { CowIcon } from "@/components/ui/CowIcon";
+import { Cow } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 
 const devPreviewAuth = process.env.NEXT_PUBLIC_DEV_PREVIEW_AUTH === "true";
@@ -57,7 +57,7 @@ export default function LoginPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-lg bg-gold flex items-center justify-center">
-              <CowIcon className="w-6 h-6 text-forest-deep" size={24} />
+              <Cow size={24} weight="fill" className="text-forest-deep" />
             </div>
             <div>
               <div className="font-display text-xl font-semibold leading-tight">LMHTS</div>
@@ -99,7 +99,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md animate-fade-up">
           <div className="lg:hidden flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-lg bg-forest-mid flex items-center justify-center">
-              <CowIcon className="w-5 h-5 text-gold" size={20} />
+              <Cow size={20} weight="fill" className="text-gold" />
             </div>
             <div className="font-display text-lg font-semibold">LMHTS</div>
           </div>

@@ -11,14 +11,6 @@ export default function Hero() {
         backgroundSize: "30px 30px",
       }}
     >
-      {/* Badge */}
-      <div
-        className="inline-flex items-center gap-2 bg-white/10 border border-white/[.18] text-gold-light text-xs font-semibold px-4 py-1.5 rounded-full mb-7 animate-fade-up"
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-gold-light animate-pulse" />
-        University of Botswana &middot; Computer Science Department
-      </div>
-
       {/* Headline */}
       <h1
         className="font-display text-white font-semibold leading-[1.1] mb-5 max-w-3xl animate-fade-up"
