@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import LandingPage from "./(marketing)/page";
+import LandingPage from "@/components/marketing/LandingPage";
 
 export default function RootPage() {
   const router = useRouter();
