@@ -7,6 +7,8 @@ import { useToast } from "@/components/ui/Toast";
 import { breedingSchema, type BreedingFormData } from "@/lib/validators/breeding";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
+import { BREEDING_EVENT_OPTIONS } from "@/lib/utils/breeding";
+import { cn } from "@/lib/utils";
 
 type AnimalPick = Pick<Tables<"animals">, "animal_id" | "tag_number" | "breed" | "gender" | "status">;
 
@@ -109,12 +111,26 @@ export default function RecordBreedingModal({ open, onClose, animals }: RecordBr
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Event Type *</label>
-            <select className="input" value={form.event_type} onChange={(e) => set("event_type", e.target.value)}>
-              {["mating", "ai", "pregnant", "calving", "abortion", "weaning"].map((t) => {
-                const label = t === "ai" ? "AI" : t === "pregnant" ? "In-calf" : t.charAt(0).toUpperCase() + t.slice(1);
-                return <option key={t} value={t}>{label}</option>;
+            <div className="flex flex-wrap gap-2">
+              {BREEDING_EVENT_OPTIONS.map(({ value, label }) => {
+                const selected = form.event_type === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => set("event_type", value)}
+                    className={cn(
+                      "px-3.5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer border",
+                      selected
+                        ? "bg-forest-mid text-white border-forest-mid"
+                        : "bg-white text-forest-deep border-border hover:bg-earth-sand"
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
               })}
-            </select>
+            </div>
           </div>
           <div>
             <label className="label">Date *</label>

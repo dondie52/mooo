@@ -7,6 +7,7 @@ import { ArrowLeft, Pencil, Trash2, HeartPulse, Syringe, HeartHandshake, Truck, 
 import { cn, formatDate } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
+import { BREEDING_EVENT_LABELS } from "@/lib/utils/breeding";
 import Tabs from "@/components/ui/Tabs";
 import EmptyState from "@/components/ui/EmptyState";
 
@@ -23,15 +24,6 @@ const breedingBadge: Record<string, string> = {
   calving: "badge-green",
   abortion: "badge-red",
   weaning: "badge-muted",
-};
-
-const breedingLabel: Record<string, string> = {
-  mating: "mating",
-  ai: "AI",
-  pregnant: "in-calf",
-  calving: "calving",
-  abortion: "abortion",
-  weaning: "weaning",
 };
 
 const statusBadge: Record<string, string> = {
@@ -228,7 +220,7 @@ export default function AnimalDetailClient({
                     {breedingRecords.map((b) => (
                       <tr key={b.breeding_id} className="border-b border-border/50 last:border-0">
                         <td className="px-6 py-3 text-muted">{formatDate(b.event_date)}</td>
-                        <td className="px-6 py-3"><span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{breedingLabel[b.event_type] ?? b.event_type}</span></td>
+                        <td className="px-6 py-3"><span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{BREEDING_EVENT_LABELS[b.event_type] ?? b.event_type}</span></td>
                         <td className="px-6 py-3 text-muted">{b.mate_tag || "\u2014"}</td>
                         <td className="px-6 py-3 text-muted">{b.sire_breed || "\u2014"}</td>
                         <td className="px-6 py-3 text-muted max-w-[200px] truncate">{b.notes || "\u2014"}</td>

@@ -8,6 +8,7 @@ import { cn, formatDate, daysFromNow } from "@/lib/utils";
 import EmptyState from "@/components/ui/EmptyState";
 import RecordBreedingModal from "@/components/breeding/RecordBreedingModal";
 import type { Tables } from "@/lib/supabase/database.types";
+import { BREEDING_EVENT_LABELS } from "@/lib/utils/breeding";
 
 type BreedingRecord = Tables<"breeding_records">;
 type AnimalPick = Pick<Tables<"animals">, "animal_id" | "tag_number" | "breed" | "gender" | "status">;
@@ -30,15 +31,6 @@ const breedingBadge: Record<string, string> = {
   calving: "badge-green",
   abortion: "badge-red",
   weaning: "badge-muted",
-};
-
-const breedingLabel: Record<string, string> = {
-  mating: "mating",
-  ai: "AI",
-  pregnant: "in-calf",
-  calving: "calving",
-  abortion: "abortion",
-  weaning: "weaning",
 };
 
 export default function BreedingClient({ records, animals, calvings, role = "farmer" }: BreedingClientProps) {
@@ -92,7 +84,7 @@ export default function BreedingClient({ records, animals, calvings, role = "far
                           </Link>
                         </td>
                         <td className="px-6 py-3">
-                          <span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{breedingLabel[b.event_type] ?? b.event_type}</span>
+                          <span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{BREEDING_EVENT_LABELS[b.event_type] ?? b.event_type}</span>
                         </td>
                         <td className="px-6 py-3 text-muted">{b.mate_tag || "—"}</td>
                         <td className="px-6 py-3 text-muted">{b.sire_breed || "—"}</td>
