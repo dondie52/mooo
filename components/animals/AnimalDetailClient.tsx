@@ -25,6 +25,15 @@ const breedingBadge: Record<string, string> = {
   weaning: "badge-muted",
 };
 
+const breedingLabel: Record<string, string> = {
+  mating: "mating",
+  ai: "AI",
+  pregnant: "in-calf",
+  calving: "calving",
+  abortion: "abortion",
+  weaning: "weaning",
+};
+
 const statusBadge: Record<string, string> = {
   active: "badge-green",
   sold: "badge-amber",
@@ -219,7 +228,7 @@ export default function AnimalDetailClient({
                     {breedingRecords.map((b) => (
                       <tr key={b.breeding_id} className="border-b border-border/50 last:border-0">
                         <td className="px-6 py-3 text-muted">{formatDate(b.event_date)}</td>
-                        <td className="px-6 py-3"><span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{b.event_type}</span></td>
+                        <td className="px-6 py-3"><span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{breedingLabel[b.event_type] ?? b.event_type}</span></td>
                         <td className="px-6 py-3 text-muted">{b.mate_tag || "\u2014"}</td>
                         <td className="px-6 py-3 text-muted">{b.sire_breed || "\u2014"}</td>
                         <td className="px-6 py-3 text-muted max-w-[200px] truncate">{b.notes || "\u2014"}</td>

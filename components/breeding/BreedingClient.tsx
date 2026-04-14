@@ -32,6 +32,15 @@ const breedingBadge: Record<string, string> = {
   weaning: "badge-muted",
 };
 
+const breedingLabel: Record<string, string> = {
+  mating: "mating",
+  ai: "AI",
+  pregnant: "in-calf",
+  calving: "calving",
+  abortion: "abortion",
+  weaning: "weaning",
+};
+
 export default function BreedingClient({ records, animals, calvings, role = "farmer" }: BreedingClientProps) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
@@ -83,7 +92,7 @@ export default function BreedingClient({ records, animals, calvings, role = "far
                           </Link>
                         </td>
                         <td className="px-6 py-3">
-                          <span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{b.event_type}</span>
+                          <span className={cn("badge", breedingBadge[b.event_type] ?? "badge-muted")}>{breedingLabel[b.event_type] ?? b.event_type}</span>
                         </td>
                         <td className="px-6 py-3 text-muted">{b.mate_tag || "—"}</td>
                         <td className="px-6 py-3 text-muted">{b.sire_breed || "—"}</td>

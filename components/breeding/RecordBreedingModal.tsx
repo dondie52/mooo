@@ -110,9 +110,10 @@ export default function RecordBreedingModal({ open, onClose, animals }: RecordBr
           <div>
             <label className="label">Event Type *</label>
             <select className="input" value={form.event_type} onChange={(e) => set("event_type", e.target.value)}>
-              {["mating", "ai", "pregnant", "calving", "abortion", "weaning"].map((t) => (
-                <option key={t} value={t}>{t === "ai" ? "AI" : t.charAt(0).toUpperCase() + t.slice(1)}</option>
-              ))}
+              {["mating", "ai", "pregnant", "calving", "abortion", "weaning"].map((t) => {
+                const label = t === "ai" ? "AI" : t === "pregnant" ? "In-calf" : t.charAt(0).toUpperCase() + t.slice(1);
+                return <option key={t} value={t}>{label}</option>;
+              })}
             </select>
           </div>
           <div>
