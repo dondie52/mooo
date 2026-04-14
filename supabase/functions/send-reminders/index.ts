@@ -15,6 +15,8 @@ Deno.serve(async (req: Request) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const brevoApiKey = Deno.env.get("BREVO_API_KEY") ?? "";
+  const brevoSenderEmail = Deno.env.get("BREVO_SENDER_EMAIL") ?? "sengatejunior@gmail.com";
+  const brevoSenderName = Deno.env.get("BREVO_SENDER_NAME") ?? "LMHTS";
 
   // Verify the caller passed a valid service-role or anon key
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -96,7 +98,7 @@ Deno.serve(async (req: Request) => {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          sender: { name: senderName, email: "noreply@lmhts.bw" },
+          sender: { name: brevoSenderName, email: brevoSenderEmail },
           to: [{ email: toEmail, name: toName }],
           subject,
           htmlContent: emailTemplate(toName, subject, body),

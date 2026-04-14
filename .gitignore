@@ -24,3 +24,6 @@ __pycache__/
 tsconfig.tsbuildinfo
 
 .playwright-mcp/
+
+.mcp.json
+supabase/.temp/
