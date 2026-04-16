@@ -111,7 +111,7 @@ export default function CertificatePage() {
             </div>
             <div className="flex items-center gap-2 bg-alert-green/20 border border-alert-green/40 rounded-full px-3 py-1.5 print-colors">
               <BadgeCheck className="w-4 h-4 text-alert-green" />
-              <span className="text-xs font-semibold text-alert-green tracking-wide uppercase">BMC Approved</span>
+              <span className="text-xs font-semibold text-alert-green tracking-wide uppercase">BAITS-Aligned</span>
             </div>
           </div>
         </div>

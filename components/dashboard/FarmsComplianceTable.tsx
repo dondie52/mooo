@@ -65,7 +65,7 @@ export default function FarmsComplianceTable({
                 Animals
               </th>
               <th className="text-right px-6 pb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
-                BMC Coverage
+                Coverage
               </th>
               <th className="text-right px-6 pb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
                 Overdue

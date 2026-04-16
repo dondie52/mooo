@@ -202,13 +202,13 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <h2 className="font-display text-lg font-semibold">Alert Thresholds</h2>
-              <p className="text-xs text-muted">Configure BMC compliance and reminder rules</p>
+              <p className="text-xs text-muted">Configure coverage advisories and reminder rules</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="label">BMC Coverage Threshold (%)</label>
+              <label className="label">Coverage Advisory Threshold (%)</label>
               <input
                 type="number"
                 className="input max-w-[200px]"
@@ -217,7 +217,7 @@ export default function AdminSettingsPage() {
                 value={settings.bmc_threshold}
                 onChange={(e) => setSettings((s) => ({ ...s, bmc_threshold: Number(e.target.value) || 80 }))}
               />
-              <p className="text-xs text-muted mt-1">Farmers below this % get a BMC warning. Default: 80%</p>
+              <p className="text-xs text-muted mt-1">Farmers below this % get a coverage advisory. Default: 80%</p>
             </div>
 
             <div>
