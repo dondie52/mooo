@@ -151,7 +151,7 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
   const reports: ReportCard[] = [
     {
       title: "Vaccination Compliance",
-      description: "BMC vaccination coverage, overdue records, and compliance status",
+      description: "Vaccination coverage, overdue records, and compliance status",
       icon: Syringe,
       hasDateFilter: true,
       dateKey: "vaccination",
@@ -192,7 +192,7 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
     },
     {
       title: "Animal Traceability",
-      description: "Movement history and location tracking for BAITS compliance",
+      description: "Movement history and location tracking",
       icon: MapPin,
       hasDateFilter: true,
       dateKey: "traceability",
