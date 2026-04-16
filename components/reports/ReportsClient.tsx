@@ -318,7 +318,7 @@ export default function ReportsClient({ animals, vaccinations, healthEvents, mov
     <div className="space-y-6">
       <div className="animate-fade-up">
         <h1 className="font-display text-2xl sm:text-3xl font-semibold">Reports</h1>
-        <p className="text-sm text-muted mt-1">BMC compliance and herd analytics</p>
+        <p className="text-sm text-muted mt-1">Compliance and herd analytics</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

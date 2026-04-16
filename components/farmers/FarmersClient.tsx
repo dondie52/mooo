@@ -66,7 +66,7 @@ export default function FarmersClient({ farmers }: FarmersClientProps) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  {["Farmer", "Farm", "District", "Animals", "BMC Coverage", "Overdue", "Last Visit"].map((h) => (
+                  {["Farmer", "Farm", "District", "Animals", "Coverage", "Overdue", "Last Visit"].map((h) => (
                     <th key={h} className="text-left px-6 pb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">{h}</th>
                   ))}
                 </tr>
