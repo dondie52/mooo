@@ -150,8 +150,8 @@ export default function VetDashboard() {
 
       {hasCriticalAlert && (
         <CriticalAlertCard
-          title="Farmer Compliance Warning"
-          message="One or more assigned farmers have overdue vaccinations and are below the 80% BMC compliance threshold. Immediate attention required."
+          title="Herd Immunity Warning"
+          message="One or more assigned farmers have overdue vaccinations and herd coverage below 80% — LMHTS's early-warning threshold for herd immunity, not an official BMC requirement. Follow up to prevent disease outbreak risk."
           action={{ label: "View farmers", href: "/farmers" }}
         />
       )}
