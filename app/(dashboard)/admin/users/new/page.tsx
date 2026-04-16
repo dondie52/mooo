@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/Toast";
 
 interface FormState {
@@ -58,60 +57,44 @@ export default function AdminNewUserPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      setError("Your session expired. Sign in again.");
+    // Posts to a Next.js API route which uses the service role key server-side
+    // to create the auth user. Avoids calling signUp() in the browser (which
+    // would replace the admin's own session with the newly created account).
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          full_name: form.full_name,
+          role: form.role,
+          ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
+          ...(form.farm_name.trim() ? { farm_name: form.farm_name.trim() } : {}),
+          ...(form.district ? { district: form.district } : {}),
+        }),
+      });
+
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        setError(
+          typeof json.error === "string"
+            ? json.error
+            : `Failed to create user (${res.status})`,
+        );
+        setLoading(false);
+        return;
+      }
+
+      toast({ message: `User ${form.full_name} created successfully`, variant: "success" });
+      router.push("/admin/users");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
       setLoading(false);
-      return;
     }
-
-    const base = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!base || !anon) {
-      setError("App configuration error.");
-      setLoading(false);
-      return;
-    }
-
-    // Edge function uses service role to create the auth user without calling signUp(),
-    // which would replace the browser session with the newly created account.
-    const res = await fetch(`${base}/functions/v1/admin-create-user`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: anon,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: form.email,
-        password: form.password,
-        full_name: form.full_name,
-        role: form.role,
-        ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
-        ...(form.farm_name.trim() ? { farm_name: form.farm_name.trim() } : {}),
-        ...(form.district ? { district: form.district } : {}),
-      }),
-    });
-
-    const json = (await res.json().catch(() => ({}))) as {
-      ok?: boolean;
-      error?: string;
-    };
-    if (!res.ok || !json.ok) {
-      setError(
-        typeof json.error === "string"
-          ? json.error
-          : `Failed to create user (${res.status})`,
-      );
-      setLoading(false);
-      return;
-    }
-
-    toast({ message: `User ${form.full_name} created successfully`, variant: "success" });
-    router.push("/admin/users");
   }
 
   return (
