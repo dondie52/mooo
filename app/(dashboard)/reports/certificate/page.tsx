@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Printer, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, formatDate, vaccinationStatus } from "@/lib/utils";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -106,12 +106,8 @@ export default function CertificatePage() {
             <div>
               <h1 className="font-display text-xl font-semibold text-white">LMHTS</h1>
               <p className="text-white/70 text-xs mt-0.5">
-                Livestock Management &amp; Health Tracking System &middot; BAITS-Aligned Compliance Document
+                Livestock Management &amp; Health Tracking System
               </p>
-            </div>
-            <div className="flex items-center gap-2 bg-alert-green/20 border border-alert-green/40 rounded-full px-3 py-1.5 print-colors">
-              <BadgeCheck className="w-4 h-4 text-alert-green" />
-              <span className="text-xs font-semibold text-alert-green tracking-wide uppercase">BAITS-Aligned</span>
             </div>
           </div>
         </div>
