@@ -78,23 +78,34 @@ export default function AdminNewUserPage() {
 
     // Edge function uses service role to create the auth user without calling signUp(),
     // which would replace the browser session with the newly created account.
-    const res = await fetch(`${base}/functions/v1/admin-create-user`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: anon,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: form.email,
-        password: form.password,
-        full_name: form.full_name,
-        role: form.role,
-        ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
-        ...(form.farm_name.trim() ? { farm_name: form.farm_name.trim() } : {}),
-        ...(form.district ? { district: form.district } : {}),
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${base}/functions/v1/admin-create-user`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: anon,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          full_name: form.full_name,
+          role: form.role,
+          ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
+          ...(form.farm_name.trim() ? { farm_name: form.farm_name.trim() } : {}),
+          ...(form.district ? { district: form.district } : {}),
+        }),
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Network error: ${err.message}. Check that the admin-create-user edge function is deployed.`
+          : "Network error reaching the server.",
+      );
+      setLoading(false);
+      return;
+    }
 
     const json = (await res.json().catch(() => ({}))) as {
       ok?: boolean;
