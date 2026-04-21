@@ -28,6 +28,7 @@ export default function FarmerDashboard() {
   const [loading, setLoading] = useState(true);
   const [totalAnimals, setTotalAnimals] = useState(0);
   const [overdueCount, setOverdueCount] = useState(0);
+  const [currentCoverage, setCurrentCoverage] = useState(0);
   const [coverageTrend, setCoverageTrend] = useState<CoverageTrendRow[]>([]);
   const [composition, setComposition] = useState<CompositionRow[]>([]);
   const [diseaseFreq, setDiseaseFreq] = useState<DiseaseFreqRow[]>([]);
@@ -45,6 +46,7 @@ export default function FarmerDashboard() {
         const [
           { count: animals },
           { count: overdue },
+          { data: coverage },
           { data: trend },
           { data: comp },
           { data: disease },
@@ -54,6 +56,7 @@ export default function FarmerDashboard() {
         ] = await Promise.all([
           supabase.from("animals").select("*", { count: "exact", head: true }).eq("status", "active"),
           supabase.from("vaccinations").select("*", { count: "exact", head: true }).lt("next_due_date", new Date().toISOString()),
+          supabase.rpc("get_farm_coverage", { farmer_uuid: user.id }),
           supabase.rpc("get_vaccination_coverage_trend"),
           supabase.rpc("get_herd_composition"),
           supabase.rpc("get_disease_frequency"),
@@ -64,6 +67,7 @@ export default function FarmerDashboard() {
 
         setTotalAnimals(animals ?? 0);
         setOverdueCount(overdue ?? 0);
+        setCurrentCoverage(typeof coverage === "number" ? coverage : 0);
         setCoverageTrend((trend as CoverageTrendRow[] | null) ?? []);
         setComposition((comp as CompositionRow[] | null) ?? []);
         setDiseaseFreq((disease as DiseaseFreqRow[] | null) ?? []);
@@ -87,11 +91,7 @@ export default function FarmerDashboard() {
     );
   }
 
-  const latestCoverage = coverageTrend.length > 0
-    ? Number(coverageTrend[coverageTrend.length - 1].coverage_pct)
-    : 0;
-
-  const hasCriticalAlert = overdueCount > 3 || latestCoverage < 80;
+  const hasCriticalAlert = overdueCount > 3 || currentCoverage < 80;
 
   return (
     <div className="space-y-6">
@@ -113,7 +113,7 @@ export default function FarmerDashboard() {
           <KpiCard label="Total Active Animals" value={totalAnimals} sublabel="Across all locations" href="/animals" />
         </div>
         <div className="bento-span-3">
-          <BmcCoverageCard coveragePct={latestCoverage} href="/vaccinations" />
+          <BmcCoverageCard coveragePct={currentCoverage} href="/vaccinations" />
         </div>
         <div className="bento-span-3">
           <KpiCard label="Overdue Vaccinations" value={overdueCount} sublabel="Requires immediate action" variant="danger" href="/vaccinations" />
