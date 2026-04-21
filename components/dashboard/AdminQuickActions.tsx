@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { UserPlus, Link2, ScrollText, FileText } from "lucide-react";
+import { UserPlus, Link2, ScrollText, Settings } from "lucide-react";
 
 const actions = [
   {
@@ -23,10 +23,10 @@ const actions = [
     description: "Review all system activity",
   },
   {
-    label: "System Reports",
-    href: "/reports",
-    icon: FileText,
-    description: "Generate compliance and traceability reports",
+    label: "Configuration Settings",
+    href: "/admin/settings",
+    icon: Settings,
+    description: "Manage thresholds, email settings, and system parameters",
   },
 ];
 

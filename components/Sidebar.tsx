@@ -106,13 +106,6 @@ const adminNavGroups = [
       { name: "Vaccinations", href: "/vaccinations", icon: Syringe },
     ],
   },
-  {
-    label: "Compliance",
-    items: [
-      { name: "Reports", href: "/reports", icon: FileText },
-      { name: "Alerts", href: "/alerts", icon: Bell },
-    ],
-  },
 ];
 
 export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {

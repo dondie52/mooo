@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import KpiCard from "@/components/dashboard/KpiCard";
 import AdminFarmsTable, { type FarmRow } from "@/components/dashboard/AdminFarmsTable";
 import AdminActivityFeed, { type ActivityRow } from "@/components/dashboard/AdminActivityFeed";
-import AdminVetWorkload, { type VetWorkloadRow } from "@/components/dashboard/AdminVetWorkload";
+import AdminAlertsExceptions, { type AlertRow } from "@/components/dashboard/AdminAlertsExceptions";
 import AdminQuickActions from "@/components/dashboard/AdminQuickActions";
 
 type SystemStats = {
@@ -17,12 +17,22 @@ type SystemStats = {
   active_alerts_7d: number;
 };
 
+type AlertWithFarmer = {
+  alert_id: string;
+  title: string;
+  severity: "info" | "warning" | "critical";
+  created_at: string;
+  profiles: { full_name: string | null } | null;
+};
+
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [farms, setFarms] = useState<FarmRow[]>([]);
   const [activities, setActivities] = useState<ActivityRow[]>([]);
-  const [vets, setVets] = useState<VetWorkloadRow[]>([]);
+  const [alerts, setAlerts] = useState<AlertRow[]>([]);
+  const [diseaseEventsThisMonth, setDiseaseEventsThisMonth] = useState(0);
+  const [overdueSystemWide, setOverdueSystemWide] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
@@ -31,11 +41,36 @@ export default function AdminDashboard() {
         const supabase = createClient();
         const rpcErrors: string[] = [];
 
-        const [statsRes, farmsRes, activityRes, vetsRes] = await Promise.all([
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        const today = new Date().toISOString();
+
+        const [
+          statsRes,
+          farmsRes,
+          activityRes,
+          alertsRes,
+          diseaseRes,
+          overdueRes,
+        ] = await Promise.all([
           supabase.rpc("get_admin_system_stats"),
           supabase.rpc("get_admin_all_farms"),
           supabase.rpc("get_admin_recent_activity", { lim: 15 }),
-          supabase.rpc("get_admin_vet_workload"),
+          supabase
+            .from("alerts")
+            .select("alert_id, title, severity, created_at, profiles:user_id(full_name)")
+            .in("severity", ["warning", "critical"])
+            .order("created_at", { ascending: false })
+            .limit(5),
+          supabase
+            .from("health_events")
+            .select("*", { count: "exact", head: true })
+            .gte("event_date", startOfMonth.toISOString().slice(0, 10)),
+          supabase
+            .from("vaccinations")
+            .select("*", { count: "exact", head: true })
+            .lt("next_due_date", today),
         ]);
 
         if (statsRes.error) {
@@ -50,9 +85,9 @@ export default function AdminDashboard() {
           console.error("get_admin_recent_activity error:", activityRes.error);
           rpcErrors.push(`Activity feed: ${activityRes.error.message}`);
         }
-        if (vetsRes.error) {
-          console.error("get_admin_vet_workload error:", vetsRes.error);
-          rpcErrors.push(`Vet workload: ${vetsRes.error.message}`);
+        if (alertsRes.error) {
+          console.error("alerts query error:", alertsRes.error);
+          rpcErrors.push(`Alerts & exceptions: ${alertsRes.error.message}`);
         }
 
         if (rpcErrors.length > 0) setErrors(rpcErrors);
@@ -66,10 +101,20 @@ export default function AdminDashboard() {
 
         const { data: farmsData } = farmsRes as { data: FarmRow[] | null };
         const { data: actData } = activityRes as { data: ActivityRow[] | null };
-        const { data: vetsData } = vetsRes as { data: VetWorkloadRow[] | null };
+        const { data: alertsData } = alertsRes as { data: AlertWithFarmer[] | null };
         setFarms(farmsData || []);
         setActivities(actData || []);
-        setVets(vetsData || []);
+        setAlerts(
+          (alertsData || []).map((a) => ({
+            alert_id: a.alert_id,
+            title: a.title,
+            severity: a.severity,
+            created_at: a.created_at,
+            farmer_name: a.profiles?.full_name ?? null,
+          }))
+        );
+        setDiseaseEventsThisMonth(diseaseRes.count ?? 0);
+        setOverdueSystemWide(overdueRes.count ?? 0);
       } catch (err) {
         console.error("Admin dashboard load error:", err);
         setErrors(["Failed to load dashboard data. Check the browser console for details."]);
@@ -99,6 +144,8 @@ export default function AdminDashboard() {
     stats && stats.avg_coverage_pct >= 80
       ? "Compliant"
       : "Below threshold";
+
+  const farmsBelow80 = farms.filter((f) => (f.coverage_pct ?? 0) < 80).length;
 
   return (
     <div className="space-y-6">
@@ -160,17 +207,46 @@ export default function AdminDashboard() {
       {/* Row 2 — Farms compliance table */}
       <AdminFarmsTable farms={farms} />
 
-      {/* Row 3 — Activity feed + Vet workload */}
+      {/* Row 3 — Activity feed + Alerts & exceptions */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-7">
           <AdminActivityFeed activities={activities} />
         </div>
         <div className="lg:col-span-5">
-          <AdminVetWorkload vets={vets} />
+          <AdminAlertsExceptions alerts={alerts} />
         </div>
       </div>
 
-      {/* Row 4 — Quick actions */}
+      {/* Row 4 — Analytics overview */}
+      <div>
+        <h2 className="font-display text-lg font-semibold text-forest-deep mb-3">
+          Analytics Overview
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <KpiCard
+            label="Disease Events This Month"
+            value={diseaseEventsThisMonth}
+            sublabel="Across all farms"
+            href="/health"
+            variant={diseaseEventsThisMonth > 0 ? "warning" : "default"}
+          />
+          <KpiCard
+            label="Overdue Vaccinations"
+            value={overdueSystemWide}
+            sublabel="System-wide"
+            href="/vaccinations"
+            variant={overdueSystemWide > 0 ? "danger" : "default"}
+          />
+          <KpiCard
+            label="Farms Below 80% Compliance"
+            value={farmsBelow80}
+            sublabel={`Of ${farms.length} total farms`}
+            variant={farmsBelow80 > 0 ? "warning" : "default"}
+          />
+        </div>
+      </div>
+
+      {/* Row 5 — Quick actions */}
       <AdminQuickActions />
     </div>
   );
