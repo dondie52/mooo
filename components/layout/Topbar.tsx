@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, User, LogOut } from "lucide-react";
+import { Bell, User, LogOut } from "lucide-react";
 import Link from "next/link";
-import { cn, initials, formatDate } from "@/lib/utils";
+import { initials, formatDate } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
+import GlobalSearch from "@/components/layout/GlobalSearch";
 
 type Profile = Tables<"profiles">;
 
@@ -23,22 +24,8 @@ function getGreeting(name: string): string {
   return `Good evening, ${firstName}`;
 }
 
-function getSearchPlaceholder(role: Profile["role"]): string {
-  switch (role) {
-    case "farmer":
-      return "Search your animals, events, vaccinations\u2026";
-    case "vet":
-      return "Search assigned farms, animals, events\u2026";
-    case "admin":
-      return "Search users, farmers, animals, alerts\u2026";
-    default:
-      return "Search\u2026";
-  }
-}
-
 export default function Topbar({ profile, unreadCount }: TopbarProps) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -57,13 +44,6 @@ export default function Topbar({ profile, unreadCount }: TopbarProps) {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = query.trim();
-    if (!trimmed) return;
-    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
-  };
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -94,21 +74,7 @@ export default function Topbar({ profile, unreadCount }: TopbarProps) {
           </div>
 
           {/* Center: Search */}
-          <form
-            onSubmit={handleSearch}
-            className="flex-1 flex justify-center max-w-[480px] mx-auto sm:mx-0 sm:flex-initial sm:w-full lg:max-w-[480px] lg:mx-auto"
-          >
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={getSearchPlaceholder(profile.role)}
-                className="w-full bg-white border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-forest-deep placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-forest-accent/30 focus:border-forest-accent transition-colors"
-              />
-            </div>
-          </form>
+          <GlobalSearch role={profile.role} />
 
           {/* Right: Bell + Avatar */}
           <div className="flex items-center gap-3 flex-shrink-0">
