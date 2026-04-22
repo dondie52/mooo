@@ -16,6 +16,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [profile, setProfile] = useState<any>(null);
   const [unreadAlerts, setUnreadAlerts] = useState(0);
+  const [pendingValidations, setPendingValidations] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +39,16 @@ export default function DashboardLayout({
         .eq("user_id", user.id)
         .eq("is_read", false);
 
+      // Vet-only: count pending certifications for the sidebar badge.
+      let pending = 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- codebase-wide pattern: profile query types resolve to `never`
+      if ((prof as any).role === "vet") {
+        const { data: pendingRows } = await supabase.rpc(
+          "get_pending_vaccinations_for_vet"
+        );
+        pending = (pendingRows as unknown[] | null)?.length ?? 0;
+      }
+
       // Update last_login timestamp
       supabase
         .from("profiles")
@@ -47,6 +58,7 @@ export default function DashboardLayout({
 
       setProfile(prof);
       setUnreadAlerts(count ?? 0);
+      setPendingValidations(pending);
       setLoading(false);
     };
     load();
@@ -70,7 +82,11 @@ export default function DashboardLayout({
           Skip to content
         </a>
 
-        <Sidebar profile={profile} unreadAlerts={unreadAlerts} />
+        <Sidebar
+          profile={profile}
+          unreadAlerts={unreadAlerts}
+          pendingValidations={pendingValidations}
+        />
         <main
           id="main-content"
           className="min-h-screen relative z-10 lg:pl-[240px]"

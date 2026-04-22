@@ -18,6 +18,7 @@ import {
   ScrollText,
   UserPlus,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Cow } from "@phosphor-icons/react";
@@ -30,6 +31,7 @@ type Profile = Tables<"profiles">;
 interface SidebarProps {
   profile: Profile;
   unreadAlerts: number;
+  pendingValidations?: number;
 }
 
 const navGroups = [
@@ -71,6 +73,7 @@ const vetNavGroups = [
       { name: "Animals", href: "/animals", icon: Beef },
       { name: "Health Events", href: "/health", icon: HeartPulse },
       { name: "Vaccinations", href: "/vaccinations", icon: Syringe },
+      { name: "Pending Validations", href: "/vaccinations/pending", icon: ShieldCheck },
     ],
   },
   {
@@ -108,7 +111,7 @@ const adminNavGroups = [
   },
 ];
 
-export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
+export default function Sidebar({ profile, unreadAlerts, pendingValidations = 0 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -196,6 +199,11 @@ export default function Sidebar({ profile, unreadAlerts }: SidebarProps) {
                     {item.name === "Alerts" && unreadAlerts > 0 && (
                       <span className="ml-auto text-[10px] font-bold bg-alert-red text-white rounded-full w-5 h-5 flex items-center justify-center">
                         {unreadAlerts > 9 ? "9+" : unreadAlerts}
+                      </span>
+                    )}
+                    {item.name === "Pending Validations" && pendingValidations > 0 && (
+                      <span className="ml-auto text-[10px] font-bold bg-gold text-forest-deep rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
+                        {pendingValidations > 9 ? "9+" : pendingValidations}
                       </span>
                     )}
                   </Link>

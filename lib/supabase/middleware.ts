@@ -4,9 +4,17 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // If env vars are missing at runtime, fall through rather than crash the request.
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -25,9 +33,14 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Stale/corrupt session cookie — treat as unauthenticated.
+    user = null;
+  }
 
   const previewAuth =
     process.env.NEXT_PUBLIC_DEV_PREVIEW_AUTH === "true" &&
@@ -62,13 +75,19 @@ export async function updateSession(request: NextRequest) {
 
   // Role-based route protection
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    const role = profile?.role;
+    // maybeSingle() returns null if 0 rows rather than throwing.
+    // Wrap in try/catch in case the request itself fails (network, RLS edge cases).
+    let role: string | undefined;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      role = profile?.role;
+    } catch {
+      role = undefined;
+    }
 
     // Admin-only routes
     if (pathname.startsWith("/admin") && role !== "admin") {

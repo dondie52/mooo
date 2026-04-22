@@ -59,6 +59,16 @@ export default function RecordVaccinationModal({ open, onClose, animals }: Recor
       return;
     }
 
+    // Lookup role so we can tailor the success message. The trigger handles
+    // auto-certification for vets/admins on the DB side.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- codebase-wide pattern: profile query types resolve to `never`
+    const role = (profile as any)?.role as "farmer" | "vet" | "admin" | undefined;
+
     const row = {
       animal_id: result.data.animal_id,
       vaccine_name: result.data.vaccine_name,
@@ -82,7 +92,13 @@ export default function RecordVaccinationModal({ open, onClose, animals }: Recor
     setLoading(false);
     onClose();
     router.refresh();
-    toast({ message: "Vaccination recorded successfully", variant: "success" });
+    toast({
+      message:
+        role === "farmer"
+          ? "Vaccination submitted to your vet for certification"
+          : "Vaccination recorded and certified",
+      variant: "success",
+    });
   }
 
   return (

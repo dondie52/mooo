@@ -408,6 +408,9 @@ export type Database = {
         Row: {
           animal_id: string
           batch_number: string | null
+          cert_status: Database["public"]["Enums"]["vaccination_cert_status"]
+          certified_at: string | null
+          certified_by: string | null
           created_at: string
           date_given: string
           logged_by: string
@@ -417,10 +420,14 @@ export type Database = {
           vacc_id: string
           vaccine_name: string
           vet_name: string | null
+          vet_notes: string | null
         }
         Insert: {
           animal_id: string
           batch_number?: string | null
+          cert_status?: Database["public"]["Enums"]["vaccination_cert_status"]
+          certified_at?: string | null
+          certified_by?: string | null
           created_at?: string
           date_given?: string
           logged_by: string
@@ -430,10 +437,14 @@ export type Database = {
           vacc_id?: string
           vaccine_name: string
           vet_name?: string | null
+          vet_notes?: string | null
         }
         Update: {
           animal_id?: string
           batch_number?: string | null
+          cert_status?: Database["public"]["Enums"]["vaccination_cert_status"]
+          certified_at?: string | null
+          certified_by?: string | null
           created_at?: string
           date_given?: string
           logged_by?: string
@@ -443,6 +454,7 @@ export type Database = {
           vacc_id?: string
           vaccine_name?: string
           vet_name?: string | null
+          vet_notes?: string | null
         }
         Relationships: [
           {
@@ -455,6 +467,13 @@ export type Database = {
           {
             foreignKeyName: "vaccinations_logged_by_fkey"
             columns: ["logged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vaccinations_certified_by_fkey"
+            columns: ["certified_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -646,6 +665,35 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_pending_vaccinations_for_vet: {
+        Args: never
+        Returns: {
+          vacc_id: string
+          animal_id: string
+          tag_number: string
+          breed: string
+          vaccine_name: string
+          date_given: string
+          next_due_date: string | null
+          batch_number: string | null
+          notes: string | null
+          farmer_id: string
+          farmer_name: string
+          logged_at: string
+        }[]
+      }
+      certify_vaccination: {
+        Args: { p_vacc_id: string; p_vet_notes?: string | null }
+        Returns: undefined
+      }
+      reject_vaccination: {
+        Args: { p_vacc_id: string; p_reason: string }
+        Returns: undefined
+      }
+      revoke_vaccination_cert: {
+        Args: { p_vacc_id: string; p_reason: string }
+        Returns: undefined
+      }
     }
     Enums: {
       acquired_how: "born" | "purchased" | "donated" | "inherited" | "other"
@@ -678,6 +726,7 @@ export type Database = {
       outcome: "recovering" | "recovered" | "ongoing" | "referred" | "deceased"
       severity: "mild" | "moderate" | "severe" | "critical"
       user_role: "farmer" | "vet" | "admin"
+      vaccination_cert_status: "pending" | "certified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -817,6 +866,7 @@ export const Constants = {
         "health_event",
         "outbreak",
         "system",
+        "vaccination_certification_pending",
       ],
       animal_status: ["active", "sold", "deceased", "missing"],
       animal_type: ["cattle", "goat", "sheep"],
@@ -841,6 +891,7 @@ export const Constants = {
       outcome: ["recovering", "recovered", "ongoing", "referred", "deceased"],
       severity: ["mild", "moderate", "severe", "critical"],
       user_role: ["farmer", "vet", "admin"],
+      vaccination_cert_status: ["pending", "certified", "rejected"],
     },
   },
 } as const

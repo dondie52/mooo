@@ -50,6 +50,7 @@ export default function VetDashboard() {
   const [upcomingVaccs, setUpcomingVaccs] = useState<UpcomingVaccRow[]>([]);
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
   const [diseaseFreq, setDiseaseFreq] = useState<{ condition_name: string; count: number }[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -63,7 +64,7 @@ export default function VetDashboard() {
           return;
         }
 
-        const [farmersRes, casesRes, vaccsRes, eventsRes, diseaseRes] = await Promise.all([
+        const [farmersRes, casesRes, vaccsRes, eventsRes, diseaseRes, pendingRes] = await Promise.all([
           (supabase.rpc as any)("get_vet_assigned_farmers", { vet_uuid: user.id }),
           (supabase.rpc as any)("get_vet_active_cases", { vet_uuid: user.id }),
           (supabase.rpc as any)("get_vet_upcoming_vaccinations", { vet_uuid: user.id }),
@@ -74,6 +75,7 @@ export default function VetDashboard() {
             .order("event_date", { ascending: false })
             .limit(10),
           (supabase.rpc as any)("get_vet_disease_frequency", { vet_uuid: user.id }),
+          (supabase.rpc as any)("get_pending_vaccinations_for_vet"),
         ]);
 
         const { data: farmersData } = farmersRes as {
@@ -93,6 +95,9 @@ export default function VetDashboard() {
         setUpcomingVaccs(vaccsData ?? []);
         setRecentEvents(eventsRes.data ?? []);
         setDiseaseFreq(diseaseData ?? []);
+        setPendingCount(
+          Array.isArray(pendingRes.data) ? pendingRes.data.length : 0
+        );
       } catch (err) {
         console.error("Vet dashboard load error:", err);
       } finally {
@@ -148,6 +153,16 @@ export default function VetDashboard() {
         </p>
       </div>
 
+      {pendingCount > 0 && (
+        <CriticalAlertCard
+          title="Vaccinations awaiting your review"
+          message={`${pendingCount} farmer-logged ${
+            pendingCount === 1 ? "entry is" : "entries are"
+          } pending certification.`}
+          action={{ label: "Review now", href: "/vaccinations/pending" }}
+        />
+      )}
+
       {hasCriticalAlert && (
         <CriticalAlertCard
           title="Herd Immunity Warning"
@@ -171,6 +186,15 @@ export default function VetDashboard() {
             value={animalsUnderCare}
             sublabel="Across all farms"
             href="/animals"
+          />
+        </div>
+        <div className="bento-span-3">
+          <KpiCard
+            label="Pending Validations"
+            value={pendingCount}
+            sublabel="Awaiting your certification"
+            variant={pendingCount > 0 ? "warning" : "default"}
+            href="/vaccinations/pending"
           />
         </div>
         <div className="bento-span-3">

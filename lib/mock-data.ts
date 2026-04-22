@@ -253,7 +253,8 @@ export const mockAnimals: Animal[] = [
 ];
 
 // ── Vaccinations ───────────────────────────────────────────────────
-export const mockVaccinations: Vaccination[] = [
+type VaccinationBase = Omit<Vaccination, "cert_status" | "certified_by" | "certified_at" | "vet_notes">;
+const vaccinationsBase: VaccinationBase[] = [
   // Overdue
   { vacc_id: "v1", animal_id: "a1", logged_by: VET_ID, vaccine_name: "FMD", date_given: daysAgo(200), next_due_date: daysAgo(20), vet_name: "Dr. Mogale", batch_number: "FMD-2024-A1", notes: null, reminder_sent: true, created_at: ts(daysAgo(200)) },
   { vacc_id: "v2", animal_id: "a2", logged_by: VET_ID, vaccine_name: "Anthrax", date_given: daysAgo(380), next_due_date: daysAgo(15), vet_name: "Dr. Mogale", batch_number: "ANT-2024-B3", notes: null, reminder_sent: true, created_at: ts(daysAgo(380)) },
@@ -271,6 +272,13 @@ export const mockVaccinations: Vaccination[] = [
   { vacc_id: "v12", animal_id: "a5", logged_by: VET_ID, vaccine_name: "LSD", date_given: daysAgo(80), next_due_date: daysFromNow(285), vet_name: "Dr. Mogale", batch_number: "LSD-2025-F1", notes: null, reminder_sent: false, created_at: ts(daysAgo(80)) },
   { vacc_id: "v13", animal_id: "a6", logged_by: VET_ID, vaccine_name: "FMD", date_given: daysAgo(20), next_due_date: daysFromNow(160), vet_name: "Dr. Mogale", batch_number: "FMD-2025-A6", notes: null, reminder_sent: false, created_at: ts(daysAgo(20)) },
 ];
+export const mockVaccinations: Vaccination[] = vaccinationsBase.map((v) => ({
+  ...v,
+  cert_status: "certified",
+  certified_by: VET_ID,
+  certified_at: v.created_at,
+  vet_notes: null,
+}));
 
 // ── Health Events ──────────────────────────────────────────────────
 export const mockHealthEvents: HealthEvent[] = [
