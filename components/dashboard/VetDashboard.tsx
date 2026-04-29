@@ -51,6 +51,7 @@ export default function VetDashboard() {
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
   const [diseaseFreq, setDiseaseFreq] = useState<{ condition_name: string; count: number }[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
+  const [overdueVaccinationsCount, setOverdueVaccinationsCount] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -64,7 +65,7 @@ export default function VetDashboard() {
           return;
         }
 
-        const [farmersRes, casesRes, vaccsRes, eventsRes, diseaseRes, pendingRes] = await Promise.all([
+        const [farmersRes, casesRes, vaccsRes, eventsRes, diseaseRes, pendingRes, overdueRes] = await Promise.all([
           (supabase.rpc as any)("get_vet_assigned_farmers", { vet_uuid: user.id }),
           (supabase.rpc as any)("get_vet_active_cases", { vet_uuid: user.id }),
           (supabase.rpc as any)("get_vet_upcoming_vaccinations", { vet_uuid: user.id }),
@@ -76,6 +77,7 @@ export default function VetDashboard() {
             .limit(10),
           (supabase.rpc as any)("get_vet_disease_frequency", { vet_uuid: user.id }),
           (supabase.rpc as any)("get_pending_vaccinations_for_vet"),
+          (supabase.rpc as any)("get_vet_overdue_vaccinations_count", { vet_uuid: user.id }),
         ]);
 
         const { data: farmersData } = farmersRes as {
@@ -97,6 +99,9 @@ export default function VetDashboard() {
         setDiseaseFreq(diseaseData ?? []);
         setPendingCount(
           Array.isArray(pendingRes.data) ? pendingRes.data.length : 0
+        );
+        setOverdueVaccinationsCount(
+          typeof overdueRes.data === "number" ? overdueRes.data : 0
         );
       } catch (err) {
         console.error("Vet dashboard load error:", err);
@@ -122,7 +127,7 @@ export default function VetDashboard() {
     0
   );
   const activeCasesCount = activeCases.length;
-  const vaccinationsDue = upcomingVaccs.length;
+  const vaccinationsDue = overdueVaccinationsCount;
 
   // Critical alert: any farmer below 80% coverage with overdue vaccinations
   const hasCriticalAlert = farmers.some(
@@ -208,10 +213,10 @@ export default function VetDashboard() {
         </div>
         <div className="bento-span-3">
           <KpiCard
-            label="Vaccinations Due"
+            label="Overdue Vaccinations"
             value={vaccinationsDue}
-            sublabel="Upcoming schedule"
-            variant={vaccinationsDue > 5 ? "danger" : "default"}
+            sublabel="Requires immediate action"
+            variant={vaccinationsDue > 0 ? "danger" : "default"}
             href="/vaccinations"
           />
         </div>
