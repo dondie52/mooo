@@ -174,7 +174,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Row 1 — KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <KpiCard
           label="Total Users"
           value={stats?.total_users ?? 0}
@@ -192,15 +192,6 @@ export default function AdminDashboard() {
           value={`${stats?.avg_coverage_pct ?? 0}%`}
           sublabel={coverageBadge}
           variant={coverageVariant}
-        />
-        <KpiCard
-          label="Active Alerts"
-          value={stats?.active_alerts_7d ?? 0}
-          sublabel="Last 7 days"
-          href="/alerts"
-          variant={
-            stats && stats.active_alerts_7d > 0 ? "warning" : "default"
-          }
         />
       </div>
 
